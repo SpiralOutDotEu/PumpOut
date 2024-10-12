@@ -20,6 +20,10 @@ RUN rustup install 1.79 && rustup default 1.79-x86_64-unknown-linux-gnu
 
 # Install Foundry
 RUN curl -L https://foundry.paradigm.xyz | bash
+# Add Foundry to the PATH
+ENV PATH="/root/.foundry/bin:$PATH"
+# Run foundryup
+RUN foundryup
 
 # Install Solana
 RUN sh -c "$(curl -sSfL https://release.solana.com/v1.18.18/install)"
