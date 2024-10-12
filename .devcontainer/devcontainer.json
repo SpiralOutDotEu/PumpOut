@@ -1,0 +1,9 @@
+{
+  "name": "Node.js, Bun, and Rust Development Container",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [],
+  "postCreateCommand": "",
+  "remoteUser": "root"
+}
