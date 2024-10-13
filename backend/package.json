@@ -1,4 +1,12 @@
 {
   "name": "backend",
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.2.2",
+  "dependencies": {
+    "bull": "^4.16.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "ioredis": "^5.4.1",
+    "sqlite3": "^5.1.7",
+    "web3": "^4.13.0"
+  }
 }
