@@ -1,9 +1,8 @@
 {
   "name": "Node.js, Bun, and Rust Development Container",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "forwardPorts": [],
-  "postCreateCommand": "",
   "remoteUser": "root"
 }
