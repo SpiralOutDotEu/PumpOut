@@ -6,6 +6,10 @@ import "../src/PumpOutTokenFactory.sol";
 import "../src/PumpOutToken.sol";
 
 contract PumpOutTokenFactoryTest is Test {
+    event PumpOutTokenCreated(
+        address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds
+    );
+
     error UnsuportedChain();
     error InsufficientPayment();
 
@@ -94,5 +98,28 @@ contract PumpOutTokenFactoryTest is Test {
 
         // Verify the owner's balance has increased by the factory balance
         assertEq(owner.balance, requiredAmount);
+    }
+
+    function testCreatePumpOutTokenEvent() public {
+        uint256 requiredAmount = factory.getRequiredAmount(chainsToDeploy);
+
+        vm.deal(owner, requiredAmount); // Give the owner sufficient funds
+        vm.prank(owner); // The owner deploys the token
+
+        // Expect the event to be emitted
+        vm.expectEmit(false, true, true, true);
+        emit PumpOutTokenCreated(
+            address(0), // We cannot predict the actual address in advance
+            "Pump Token",
+            "PTK",
+            owner,
+            chainsToDeploy
+        );
+
+        address tokenAddress =
+            factory.createPumpOutToken{value: requiredAmount}("Pump Token", "PTK", owner, owner, chainsToDeploy);
+
+        // Verify that the token address is not zero
+        assertTrue(tokenAddress != address(0));
     }
 }

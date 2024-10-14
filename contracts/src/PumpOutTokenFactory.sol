@@ -5,7 +5,9 @@ import "./PumpOutToken.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract PumpOutTokenFactory is Ownable {
-    event PumpOutTokenCreated(address tokenAddress, string name, string symbol, address minter);
+    event PumpOutTokenCreated(
+        address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds
+    );
 
     error UnsuportedChain();
     error InsufficientPayment();
@@ -55,7 +57,7 @@ contract PumpOutTokenFactory is Ownable {
 
         PumpOutToken newToken = new PumpOutToken(name, symbol, minter, owner);
 
-        emit PumpOutTokenCreated(address(newToken), name, symbol, minter);
+        emit PumpOutTokenCreated(address(newToken), name, symbol, minter, chainIds);
 
         return address(newToken);
     }
