@@ -4,6 +4,7 @@ import taskRoutes from "./routes/tasks";
 import { setupBullBoard } from "./routes/bullBoard";
 import "./workers/taskProcessor";
 import { processAllQueues } from "./workers/taskProcessor";
+import "./polyfills"
 
 const app = express();
 const PORT = process.env.PORT || 3000;
