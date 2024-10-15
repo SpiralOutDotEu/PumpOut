@@ -40,6 +40,23 @@ class Database implements DatabaseInterface {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    const createProcessedEventsTable = `
+    CREATE TABLE IF NOT EXISTS processed_events (
+      event_hash TEXT PRIMARY KEY,
+      processed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+    const createLastBlockTable = `
+      CREATE TABLE IF NOT EXISTS last_block (
+        network TEXT PRIMARY KEY,
+        last_block INTEGER
+      )
+    `;
+
+    this.db.run(createLastBlockTable);
+    this.db.run(createProcessedEventsTable);
     this.db.run(createCallsTable);
   }
 
@@ -81,6 +98,66 @@ class Database implements DatabaseInterface {
           reject(err);
         } else {
           resolve(row);
+        }
+      });
+    });
+  }
+
+  // Method to check if an event has been processed
+  isEventProcessed(eventHash: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT COUNT(1) AS count FROM processed_events WHERE event_hash = ?`;
+      this.db.get(query, [eventHash], (err, row: { count: number }) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row.count > 0);  // Return true if the event has been processed
+        }
+      });
+    });
+  }
+
+  // Method to mark an event as processed
+  markEventAsProcessed(eventHash: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `INSERT INTO processed_events (event_hash) VALUES (?)`;
+      this.db.run(query, [eventHash], function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  // Method to get the last block processed for a specific network
+  getLastBlock(network: string): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT last_block FROM last_block WHERE network = ?`;
+      this.db.get(query, [network], (err, row: { last_block: number }) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row ? row.last_block : null);  // Return the last block if exists, otherwise null
+        }
+      });
+    });
+  }
+
+  // Method to update the last block processed for a specific network
+  updateLastBlock(network: string, blockNumber: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const query = `
+          INSERT INTO last_block (network, last_block) 
+          VALUES (?, ?)
+          ON CONFLICT(network) DO UPDATE SET last_block = excluded.last_block
+        `;
+      this.db.run(query, [network, blockNumber], (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
         }
       });
     });
