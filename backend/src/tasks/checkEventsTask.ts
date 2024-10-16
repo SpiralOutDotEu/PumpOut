@@ -29,6 +29,10 @@ async function checkEventsTask(): Promise<any> {
     const lastBlock = await database.getLastBlock(network);
     const fromBlock = lastBlock ? lastBlock + 1 : 'earliest'; // Fetch from the next block or from the start
 
+    // First update the last block processed for this network, so that we are sure that we are not gonna miss a block
+    const latestBlock = await web3.eth.getBlockNumber();
+    await database.updateLastBlock(network, Number(latestBlock));
+
     // Fetch `PumpOutTokenCreated` events
     const events = (await contract.getPastEvents('PumpOutTokenCreated', {
       fromBlock,
@@ -68,9 +72,6 @@ async function checkEventsTask(): Promise<any> {
       }
     }
 
-    // Update the last block processed for this network
-    const latestBlock = await web3.eth.getBlockNumber();
-    await database.updateLastBlock(network, Number(latestBlock));
   }
 
   return results;
