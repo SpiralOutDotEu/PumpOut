@@ -76,7 +76,7 @@ const Hero: React.FC = () => {
           return (
             <div
               key={token.id}
-              className="h-10 w-40 flex items-center justify-center rounded-sm overflow-hidden text-[8px] font-semibold shadow-md border border-white"
+              className="h-10 w-60 flex items-center justify-center rounded-sm overflow-hidden text-[8px] font-semibold shadow-md border border-white"
               style={{
                 backgroundColor: token.color,
                 color: textColor,
