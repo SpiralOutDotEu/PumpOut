@@ -67,8 +67,18 @@ async function checkEventsTask(): Promise<any> {
 
         results.push(eventData);
 
-        // TODO:, queue this event for further processing
-        // e.g., await taskQueue.add({ eventData });
+        // Insert the event into the events table
+        await database.insertEvent({
+          eventHash,
+          network,
+          contractAddress,
+          tokenAddress: event.returnValues.tokenAddress as string,
+          name: event.returnValues.name as string,
+          symbol: event.returnValues.symbol as string,
+          minter: event.returnValues.minter as string,
+          chainIds: event.returnValues.chainIds as string,
+        });
+
       }
     }
 
