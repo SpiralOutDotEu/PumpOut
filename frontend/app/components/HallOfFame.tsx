@@ -43,13 +43,12 @@ const HallOfFame: React.FC = () => {
           {/* Latest token, prominently displayed */}
           {tokens[0] && (
             <div
-              className="w-64 h-32 flex flex-col items-center justify-center bg-yellow-400 text-black font-semibold text-md rounded-lg shadow-lg border border-black"
+              className="w-54 h-32 flex flex-col items-center justify-center bg-yellow-400 text-black font-semibold text-md rounded-lg shadow-lg border border-black"
               title={tokens[0].name}
             >
               {/* Placeholder for token icon */}
-              <div className="w-10 h-10 bg-gray-300 rounded-full mb-2" />
+              <img src={"https://api.dicebear.com/9.x/pixel-art/svg?seed="+tokens[0].name} className="w-10 h-10 bg-gray-300 rounded-full mb-2"/>
               <span>{tokens[0].name}</span>
-              <span className="text-sm">Winner!</span>
             </div>
           )}
 
@@ -58,11 +57,11 @@ const HallOfFame: React.FC = () => {
             {tokens.slice(1).map((token) => (
               <div
                 key={token.id}
-                className="w-40 h-20 flex flex-col items-center justify-center bg-blue-500 text-white font-semibold text-sm rounded-lg shadow-md border border-black"
+                className="w-40 h-30 flex flex-col items-center justify-center bg-blue-500 text-white font-semibold text-sm rounded-lg shadow-md border border-black"
                 title={token.name}
               >
                 {/* Placeholder for token icon */}
-                <div className="w-8 h-8 bg-gray-300 rounded-full mb-1" />
+                <img src={"https://api.dicebear.com/8.x/pixel-art/svg?seed="+token.name} className="w-10 h-10 bg-gray-300 rounded-full mb-2"/>
                 <span>{token.name}</span>
               </div>
             ))}
