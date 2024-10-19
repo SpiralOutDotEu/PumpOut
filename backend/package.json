@@ -3,7 +3,8 @@
   "packageManager": "yarn@4.2.2",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index.ts"
   },
   "dependencies": {
     "@bull-board/express": "^6.2.1",
@@ -23,6 +24,7 @@
     "eslint": "^9.12.0",
     "eslint-plugin-react": "^7.37.1",
     "globals": "^15.11.0",
+    "nodemon": "^3.1.7",
     "typescript-eslint": "^8.8.1"
   }
 }
