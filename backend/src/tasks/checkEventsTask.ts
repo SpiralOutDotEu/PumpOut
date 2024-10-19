@@ -2,6 +2,7 @@ import Web3, { EventLog } from 'web3';
 import path from 'path';
 import fs from 'fs';
 import database from '../database';
+import taskManager from './taskManager';
 
 // Path to the ABI file in the artifacts folder
 const ABI_PATH = path.resolve(__dirname, '../artifacts/PumpOutTokenFactory.json');
@@ -66,6 +67,17 @@ async function checkEventsTask(): Promise<any> {
         };
 
         results.push(eventData);
+
+        try {
+          const callId = await taskManager.startTask({
+            taskName: "process-events",
+            params: eventData,
+          });
+
+          console.log(`Task started successfully with call ID: ${callId}`);
+        } catch (error) {
+          console.error("Error starting event processing task:", error);
+        }
 
         // Insert the event into the events table
         await database.insertEvent({
