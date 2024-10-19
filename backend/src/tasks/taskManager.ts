@@ -21,7 +21,12 @@ class TaskManager {
 
             // Get the queue for the task name and add a job to it
             const taskQueue = getTaskQueue(taskName);
-            await taskQueue.add({ params, callId });
+            await taskQueue.add({ params, callId }, {
+                timeout: 0,  // No timeout, let the task run as long as needed
+                attempts: 2,  // Retry up to 2 times if the job fails
+                removeOnComplete: false,  // Do not automatically remove completed jobs
+                removeOnFail: false,  // Keep failed jobs for debugging
+            });
 
             return callId;
         } catch (error) {
