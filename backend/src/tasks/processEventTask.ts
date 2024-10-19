@@ -59,7 +59,7 @@ async function processEventTask(eventData: EventData): Promise<any> {
 
 // Utility function to determine the network type based on chain ID
 function getNetworkType(chainId: string): 'EVM' | 'Solana' | 'SUI' {
-    const evmChainIds = new Set([1, 3, 4, 5, 42, 137, 80001, 42161, 421611, 10, 69]);
+    const evmChainIds = new Set([1, 2, 3, 4, 5, 42, 137, 80001, 42161, 421611, 10, 69]);
 
     const chainIdNumber = parseInt(chainId, 10);
 
