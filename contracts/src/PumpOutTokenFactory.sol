@@ -2,11 +2,20 @@
 pragma solidity >=0.6.12 <0.9.0;
 
 import "./PumpOutToken.sol";
+import "./PeerToken.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract PumpOutTokenFactory is Ownable {
     event PumpOutTokenCreated(
         address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds
+    );
+    event PeerTokenCreated(
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        address minter,
+        uint256 parentChain,
+        address parentToken
     );
 
     error UnsuportedChain();
@@ -58,6 +67,21 @@ contract PumpOutTokenFactory is Ownable {
         PumpOutToken newToken = new PumpOutToken(name, symbol, minter, owner);
 
         emit PumpOutTokenCreated(address(newToken), name, symbol, minter, chainIds);
+
+        return address(newToken);
+    }
+
+    function createPeerToken(
+        string memory name,
+        string memory symbol,
+        address minter,
+        address owner,
+        uint256 parentChain,
+        address parentToken
+    ) external onlyOwner returns (address) {
+        PeerToken newToken = new PeerToken(name, symbol, minter, owner);
+
+        emit PeerTokenCreated(address(newToken), name, symbol, minter, parentChain, parentToken);
 
         return address(newToken);
     }

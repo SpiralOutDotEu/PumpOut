@@ -9,6 +9,14 @@ contract PumpOutTokenFactoryTest is Test {
     event PumpOutTokenCreated(
         address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds
     );
+    event PeerTokenCreated(
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        address minter,
+        uint256 parentChain,
+        address parentToken
+    );
 
     error UnsuportedChain();
     error InsufficientPayment();
@@ -120,6 +128,30 @@ contract PumpOutTokenFactoryTest is Test {
             factory.createPumpOutToken{value: requiredAmount}("Pump Token", "PTK", owner, owner, chainsToDeploy);
 
         // Verify that the token address is not zero
+        assertTrue(tokenAddress != address(0));
+    }
+
+    function testCreatePeerToken() public {
+        uint256 parentChain = 1; // Parent chain is Ethereum in this case
+        address parentToken = address(0x5); // Simulated parent token address
+
+        vm.prank(owner); // Simulate the owner calling the function
+
+        // Expect the event to be emitted
+        vm.expectEmit(false, true, true, true);
+        emit PeerTokenCreated(
+            address(0), // We cannot predict the actual address in advance
+            "Peer Token",
+            "PTR",
+            owner,
+            parentChain,
+            parentToken
+        );
+
+        // Create PeerToken
+        address tokenAddress = factory.createPeerToken("Peer Token", "PTR", owner, owner, parentChain, parentToken);
+
+        // Verify the token was created
         assertTrue(tokenAddress != address(0));
     }
 }
