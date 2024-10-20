@@ -1,6 +1,6 @@
 import { processEVMEvent } from '../services/evmService';
 import { processSolanaEvent } from '../services/solanaService';
-import { processSuiEvent } from '../services/suiService';  // Import SUI processing
+import { processSuiEvent } from '../services/suiService';
 import { createProject } from '../services/nttCliService';
 
 interface EventData {
@@ -21,8 +21,8 @@ async function processEventTask(eventData: EventData): Promise<any> {
         }
 
         // Step 1: Create a project once for this event (before processing any chain ID)
-        const projectPath = await createProject(eventData.network, eventData.tokenAddress);
-        console.log(`Project created at: ${projectPath}`);
+        const { basePath, projectName } = await createProject(eventData.network, eventData.tokenAddress);
+        console.log(`Project created with base path: ${basePath} and project name: ${projectName}`);
 
         // Step 2: Process each chain ID with the created project path
         for (const chainId of eventData.chainIds) {
@@ -34,13 +34,28 @@ async function processEventTask(eventData: EventData): Promise<any> {
             let result;
             switch (networkType) {
                 case 'EVM':
-                    result = await processEVMEvent({ ...eventData, chainId, projectPath });
+                    result = await processEVMEvent({
+                        ...eventData,
+                        chainId,
+                        projectPath: basePath,
+                        projectFile: projectName
+                    });
                     break;
                 case 'Solana':
-                    result = await processSolanaEvent({ ...eventData, chainId, projectPath });
+                    result = await processSolanaEvent({
+                        ...eventData,
+                        chainId,
+                        projectPath: basePath,
+                        projectFile: projectName
+                    });
                     break;
                 case 'SUI':
-                    result = await processSuiEvent({ ...eventData, chainId, projectPath });
+                    result = await processSuiEvent({
+                        ...eventData,
+                        chainId,
+                        projectPath: basePath,
+                        projectFile: projectName
+                    });
                     break;
                 default:
                     throw new Error(`Unsupported network type for chain ID: ${chainId}`);
@@ -59,7 +74,7 @@ async function processEventTask(eventData: EventData): Promise<any> {
 
 // Utility function to determine the network type based on chain ID
 function getNetworkType(chainId: string): 'EVM' | 'Solana' | 'SUI' {
-    const evmChainIds = new Set([1, 2, 3, 4, 5, 42, 137, 80001, 42161, 421611, 10, 69]);
+    const evmChainIds = new Set([1, 2, 3, 4, 5, 42, 137, 80001, 42161, 421611, 10, 69, 11155111, 421614, 84532]);
 
     const chainIdNumber = parseInt(chainId, 10);
 
@@ -69,12 +84,12 @@ function getNetworkType(chainId: string): 'EVM' | 'Solana' | 'SUI' {
     }
 
     // Handle Solana (assuming chain ID 999999 is for Solana)
-    if (chainId === '999999') {
+    if (chainId === '901') {
         return 'Solana';
     }
 
     // Handle SUI (assuming chain ID 888888 is for SUI)
-    if (chainId === '888888') {
+    if (chainId === '101') {
         return 'SUI';
     }
 
