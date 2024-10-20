@@ -8,8 +8,8 @@ contract PumpOutTokenFactoryScript is Script {
     PumpOutTokenFactory public factory;
 
     // Define the parameters for deployment
-    uint256[] public chainIds = [1, 2, 137]; // Example chain ids: Ethereum, BSC, Polygon
-    uint256[] public prices = [0.01 ether, 0.005 ether, 0.002 ether]; // Example prices in wei
+    uint256[] public chainIds = [11155111, 421614, 84532, 901, 101]; // Example chain ids: Sepolia, Arbitrum Sepolia, Base Sepolia,
+    uint256[] public prices = [0.01 ether, 0.005 ether, 0.002 ether, 0.002 ether, 0.002 ether]; // Example prices in wei
     uint256 public minFee = 0.001 ether; // Example minimum fee in wei
 
     function setUp() public {
@@ -27,12 +27,18 @@ contract PumpOutTokenFactoryScript is Script {
         console.log("PumpOutTokenFactory deployed at:", address(factory));
 
         // Deploy sample token 1
-        uint256[] memory chains = new uint256[](2);
-        chains[0] = 1;
-        chains[1] = 2;
-        uint256 requiredAmount = factory.getRequiredAmount(chains);
-        address token = factory.createPumpOutToken{value: requiredAmount}("sample token", "STKN", msg.sender, msg.sender, chains);
+        uint256 requiredAmount = factory.getRequiredAmount(chainIds);
+        address token = factory.createPumpOutToken{value: requiredAmount}(
+            "Sample Multi Token", "SMTKN", msg.sender, msg.sender, chainIds
+        );
         console.log("token address: ", address(token));
+
+        // Deploy sample token 1
+        uint256 requiredAmount2 = factory.getRequiredAmount(chainIds);
+        address token2 = factory.createPumpOutToken{value: requiredAmount2}(
+            "Second Multi Token", "S2MTKN", msg.sender, msg.sender, chainIds
+        );
+        console.log("token address: ", address(token2));
 
         // Stop broadcasting
         vm.stopBroadcast();
