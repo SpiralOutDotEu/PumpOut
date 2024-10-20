@@ -23,7 +23,7 @@ class TaskManager {
             const taskQueue = getTaskQueue(taskName);
             await taskQueue.add({ params, callId }, {
                 timeout: 0,  // No timeout, let the task run as long as needed
-                attempts: 2,  // Retry up to 2 times if the job fails
+                attempts: 1,  // Do not retry if the job fails
                 removeOnComplete: false,  // Do not automatically remove completed jobs
                 removeOnFail: false,  // Keep failed jobs for debugging
             });
