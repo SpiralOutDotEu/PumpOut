@@ -10,6 +10,7 @@
     "@bull-board/express": "^6.2.1",
     "bull": "^4.16.3",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
     "express": "^4.21.1",
     "ioredis": "^5.4.1",
     "json2csv": "^6.0.0-alpha.2",
