@@ -1,4 +1,4 @@
-import Web3 from 'web3';
+import { ethers } from 'ethers';
 import { addChain } from '../services/nttCliService';
 import "dotenv/config";
 import { ADD_CHAIN_ID_MAP } from '../constants/constants';
@@ -27,39 +27,52 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
     try {
         const { chainId, projectPath, projectFile, name, symbol, minter, tokenAddress } = eventData;
 
-        // Step 1: Get the RPC URL and Contract Address from environment variables
+        // Step 1: Get the RPC URL, Contract Address, and Private Key from environment variables
         const rpcUrl = process.env[`${chainId}_RPC_URL`];
         const contractAddress = process.env[`${chainId}_CONTRACT_ADDRESS`];
+        const privateKey = process.env[`ETH_PRIVATE_KEY`];  // Use a private key for signing
 
-        if (!rpcUrl || !contractAddress) {
-            throw new Error(`Missing RPC URL or Contract Address for chain ID: ${chainId}`);
+        if (!rpcUrl || !contractAddress || !privateKey) {
+            throw new Error(`Missing RPC URL, Contract Address, or Private Key for chain ID: ${chainId}`);
         }
 
-        // Step 2: Initialize web3 with the RPC URL
-        const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl));
+        // Step 2: Initialize ethers provider and wallet
+        const provider = new ethers.JsonRpcProvider(rpcUrl);
+        const wallet = new ethers.Wallet(privateKey, provider);
 
-        const contract = new web3.eth.Contract(contractAbi.abi, contractAddress);
+        // Step 3: Create a contract object using ABI and contract address
+        const contract = new ethers.Contract(contractAddress, contractAbi.abi, wallet);
 
-        // Step 3: Prepare the transaction
-        const accounts = await web3.eth.getAccounts();
-        const owner = accounts[0];  // The first account is used as the owner
+        // Step 4: Estimate gas and send the transaction
+        const gasEstimate = await contract.createPeerToken.estimateGas(
+            name, symbol, minter, wallet.address, parseInt(chainId), tokenAddress
+        );
 
-        // Call the `createPeerToken` method and wait for the result
-        const tx = await contract.methods
-            .createPeerToken(name, symbol, minter, owner, parseInt(chainId), tokenAddress)
-            .send({ from: owner });
+        const tx = await contract.createPeerToken(
+            name, symbol, minter, wallet.address, parseInt(chainId), tokenAddress,
+            {
+                gasLimit: gasEstimate,
+                gasPrice: (await provider.getFeeData()).gasPrice,
+            }
+        );
 
-        // Assuming the token address is returned in the transaction receipt
-        const createdTokenAddress = tx.events?.TokenCreated?.returnValues?.tokenAddress; // || tx.contractAddress;
+        // Wait for the transaction to be mined
+        const receipt = await tx.wait();
 
-        // Ensure the createdTokenAddress is a valid string
-        if (!createdTokenAddress || typeof createdTokenAddress !== 'string') {
+        // Retrieve the token address from the emitted event
+        const createdTokenAddress = receipt.logs[1].args[0];
+        const creationHash = receipt.hash;
+        console.log("creationHash: ", creationHash)
+        console.log("createdTokenAddress: ", createdTokenAddress, " typeOf: ", typeof (createdTokenAddress))
+
+        // Ensure the createdTokenAddress is valid
+        if (!createdTokenAddress) {
             throw new Error(`Failed to retrieve a valid token address from the transaction on chain ${chainId}`);
         }
 
         console.log(`Peer token created on chain ${chainId}: ${createdTokenAddress}`);
 
-        // Step 4: Use the centralized addChain function from nttCliService
+        // Step 5: Use the centralized addChain function from nttCliService
         const chainString = ADD_CHAIN_ID_MAP[chainId];  // Convert chain ID to string representation
         if (!chainString) {
             throw new Error(`Chain ID ${chainId} not mapped to a known network`);
@@ -73,8 +86,7 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
             data: {
                 createdTokenAddress,
                 chainId,
-                projectPath,
-                projectFile,
+                creationHash,
             },
         };
     } catch (error) {
