@@ -1,7 +1,7 @@
 import { processEVMEvent } from '../services/evmService';
 import { processSolanaEvent } from '../services/solanaService';
 import { processSuiEvent } from '../services/suiService';
-import { createProject } from '../services/nttCliService';
+import { addChain, createProject } from '../services/nttCliService';
 
 interface EventData {
     network: string;
@@ -24,7 +24,11 @@ async function processEventTask(eventData: EventData): Promise<any> {
         const { basePath, projectName } = await createProject(eventData.network, eventData.tokenAddress);
         console.log(`Project created with base path: ${basePath} and project name: ${projectName}`);
 
-        // Step 2: Process each chain ID with the created project path
+        // Step 2: Run the NTT CLI add-chain for the network that triggered this event
+        await addChain(eventData.network, projectName, basePath, eventData.tokenAddress);
+        console.log(`Chain added for the network: ${eventData.network}`);
+
+        // Step 3: Process each chain ID with the created project path
         for (const chainId of eventData.chainIds) {
             console.log(`Processing chain ID: ${chainId}`);
 
