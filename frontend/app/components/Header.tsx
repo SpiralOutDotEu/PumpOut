@@ -1,8 +1,8 @@
-// components/Header.tsx
 "use client";
 
 import React, { useState } from "react";
 import Modal from "./Modal";
+import CreateTokenModal from "./CreateTokenModal";
 
 const Header: React.FC = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
@@ -48,13 +48,10 @@ const Header: React.FC = () => {
       )}
 
       {isCreateTokenOpen && (
-        <Modal
+        <CreateTokenModal
           isOpen={isCreateTokenOpen}
           onClose={() => setIsCreateTokenOpen(false)}
-          title="Create a Token"
-        >
-          <p>Form goes here...</p>
-        </Modal>
+        />
       )}
     </header>
   );

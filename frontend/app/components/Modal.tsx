@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,8 +18,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
       {/* Modal Content */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-md rounded bg-white p-6 text-black">
-          <Dialog.Title className="font-bold text-xl">{title}</Dialog.Title>
+        <DialogPanel className="mx-auto max-w-md rounded bg-white p-6 text-black">
+          <DialogTitle className="font-bold text-xl">{title}</DialogTitle>
           <div className="mt-4">{children}</div>
           <button
             onClick={onClose}
@@ -27,7 +27,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
           >
             Close
           </button>
-        </Dialog.Panel>
+        </DialogPanel>
       </div>
     </Dialog>
   );

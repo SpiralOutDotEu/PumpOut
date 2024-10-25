@@ -7,7 +7,16 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract PumpOutTokenFactory is Ownable {
     event PumpOutTokenCreated(
-        address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        address minter,
+        uint256 availableSupply,
+        uint256 lpSupply,
+        uint256 k,
+        uint256 protocolFeePercentage,
+        address protocolFeeCollector,
+        uint256[] chainIds
     );
     event PeerTokenCreated(
         address indexed tokenAddress,
@@ -24,14 +33,33 @@ contract PumpOutTokenFactory is Ownable {
     mapping(uint256 => uint256) public chainPrices; // chainId => price in wei
     uint256 public minFee;
 
-    constructor(address initialOwner, uint256[] memory chainIds, uint256[] memory prices, uint256 _minFee)
-        Ownable(initialOwner)
-    {
+    address public operatorMinter;
+    address public operatorOwner;
+
+    constructor(
+        address initialOwner,
+        address _operatorMinter,
+        address _operatorOwner,
+        uint256[] memory chainIds,
+        uint256[] memory prices,
+        uint256 _minFee
+    ) Ownable(initialOwner) {
+        operatorMinter = _operatorMinter;
+        operatorOwner = _operatorOwner;
+
         require(chainIds.length == prices.length, "Chain IDs and prices length mismatch");
         for (uint256 i = 0; i < chainIds.length; i++) {
             chainPrices[chainIds[i]] = prices[i];
         }
         minFee = _minFee;
+    }
+
+    function setOperatorMinter(address _operatorMinter) external onlyOwner {
+        operatorMinter = _operatorMinter;
+    }
+
+    function setOperatorOwner(address _operatorOwner) external onlyOwner {
+        operatorOwner = _operatorOwner;
     }
 
     function setChainPrice(uint256 chainId, uint256 price) external onlyOwner {
@@ -55,8 +83,11 @@ contract PumpOutTokenFactory is Ownable {
     function createPumpOutToken(
         string memory name,
         string memory symbol,
-        address minter,
-        address owner,
+        uint256 availableSupply,
+        uint256 lpSupply,
+        uint256 k,
+        uint256 protocolFeePercentage,
+        address protocolFeeCollector,
         uint256[] memory chainIds
     ) external payable onlyOwner returns (address) {
         uint256 requiredAmount = getRequiredAmount(chainIds);
@@ -64,24 +95,42 @@ contract PumpOutTokenFactory is Ownable {
             revert InsufficientPayment();
         }
 
-        PumpOutToken newToken = new PumpOutToken(name, symbol, minter, owner);
+        PumpOutToken newToken = new PumpOutToken(
+            name,
+            symbol,
+            operatorMinter,
+            operatorOwner,
+            availableSupply,
+            lpSupply,
+            k,
+            protocolFeePercentage,
+            protocolFeeCollector
+        );
 
-        emit PumpOutTokenCreated(address(newToken), name, symbol, minter, chainIds);
+        emit PumpOutTokenCreated(
+            address(newToken),
+            name,
+            symbol,
+            operatorMinter,
+            availableSupply,
+            lpSupply,
+            k,
+            protocolFeePercentage,
+            protocolFeeCollector,
+            chainIds
+        );
 
         return address(newToken);
     }
 
-    function createPeerToken(
-        string memory name,
-        string memory symbol,
-        address minter,
-        address owner,
-        uint256 parentChain,
-        address parentToken
-    ) external onlyOwner returns (address) {
-        PeerToken newToken = new PeerToken(name, symbol, minter, owner);
+    function createPeerToken(string memory name, string memory symbol, uint256 parentChain, address parentToken)
+        external
+        onlyOwner
+        returns (address)
+    {
+        PeerToken newToken = new PeerToken(name, symbol, operatorMinter, operatorOwner);
 
-        emit PeerTokenCreated(address(newToken), name, symbol, minter, parentChain, parentToken);
+        emit PeerTokenCreated(address(newToken), name, symbol, operatorMinter, parentChain, parentToken);
 
         return address(newToken);
     }

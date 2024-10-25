@@ -10,8 +10,6 @@ import {Time} from "openzeppelin-contracts/contracts/utils/types/Time.sol";
 import {Votes} from "openzeppelin-contracts/contracts/governance/utils/Votes.sol";
 
 contract BaseToken is ERC20, ERC20Permit, ERC20Votes {
-    uint256 public constant MAX_SUPPLY = 10_000_000_000e18;
-
     constructor(string memory _name, string memory _symbol) ERC20Permit(_name) ERC20(_name, _symbol) {}
 
     function clock() public view virtual override returns (uint48) {
@@ -24,10 +22,6 @@ contract BaseToken is ERC20, ERC20Permit, ERC20Votes {
             revert Votes.ERC6372InconsistentClock();
         }
         return "mode=timestamp";
-    }
-
-    function _maxSupply() internal pure override returns (uint256) {
-        return MAX_SUPPLY;
     }
 
     function nonces(address _owner) public view override(ERC20Permit, Nonces) returns (uint256) {
