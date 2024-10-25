@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -18,11 +19,9 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [selectedNetwork, setSelectedNetwork] = useState(NETWORKS[0]);
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [minter, setMinter] = useState("");
-  const [owner, setOwner] = useState("");
   const [chainIds, setChainIds] = useState<number[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [logo, setLogo] = useState<File | null>(null);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,8 +71,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             params: [{ chainId: ethers.toBeHex(network.chainId) }],
           });
           setWalletChainId(network.chainId);
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (switchError: any) {
           // This error code indicates that the chain has not been added to MetaMask.
           if (switchError.code === 4902) {
@@ -100,8 +97,9 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Leave empty function for now
+    // TODO: handle image
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,24 +135,18 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       const contractAddress = selectedNetwork.contractAddress;
       const abi = [
         // Minimal ABI with the createPumpOutToken function and the PumpOutTokenCreated event
-        "function createPumpOutToken(string name, string symbol, address minter, address owner, uint256[] chainIds) payable returns (address)",
-        "event PumpOutTokenCreated(address indexed tokenAddress, string name, string symbol, address minter, uint256[] chainIds)",
+        "function createPumpOutToken(string name, string symbol, uint256[] chainIds) payable returns (address)",
+        "event PumpOutTokenCreated(address indexed tokenAddress, string name, string symbol, uint256[] chainIds)",
       ];
 
       const contract = new ethers.Contract(contractAddress, abi, signer);
 
       // Calculate requiredAmount
-      // For simplicity, we can assume requiredAmount is 0 for now, unless we have a function to get it
-      const requiredAmount = ethers.parseEther("0"); // Replace with actual value if needed
+      const requiredAmount = ethers.parseEther("0"); // Adjust if needed based on getRequiredAmount function
 
-      const tx = await contract.createPumpOutToken(
-        name,
-        symbol,
-        minter,
-        owner,
-        chainIds,
-        { value: requiredAmount }
-      );
+      const tx = await contract.createPumpOutToken(name, symbol, chainIds, {
+        value: requiredAmount,
+      });
       setTransactionHash(tx.hash);
 
       // Wait for transaction to be mined
@@ -175,8 +167,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       }
 
       setIsSubmitting(false);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An error occurred.");
@@ -209,15 +199,15 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
           </select>
         </div>
 
-        {/* Thumbnail Upload */}
+        {/* Logo Upload */}
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700">
-            Thumbnail
+            Logo
           </label>
           <input
             type="file"
             accept="image/*"
-            onChange={handleThumbnailChange}
+            onChange={handleLogoChange}
             className="mt-1 block w-full text-sm text-gray-500"
           />
         </div>
@@ -244,32 +234,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             type="text"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Minter Address
-          </label>
-          <input
-            type="text"
-            value={minter}
-            onChange={(e) => setMinter(e.target.value)}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Owner Address
-          </label>
-          <input
-            type="text"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
