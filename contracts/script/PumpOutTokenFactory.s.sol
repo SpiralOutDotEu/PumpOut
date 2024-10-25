@@ -22,60 +22,30 @@ contract PumpOutTokenFactoryScript is Script {
 
         // Deploy the PumpOutTokenFactory contract
         address initialOwner = msg.sender;
-        address operatorMinter = msg.sender; // For the purpose of the script, use msg.sender
-        address operatorOwner = msg.sender; // For the purpose of the script, use msg.sender
+        address operatorMinter = msg.sender; // Use msg.sender for simplicity in the script
+        address operatorOwner = msg.sender; // Use msg.sender for simplicity in the script
 
         factory = new PumpOutTokenFactory(initialOwner, operatorMinter, operatorOwner, chainIds, prices, minFee);
 
         // Log the deployed factory address
         console.log("PumpOutTokenFactory deployed at:", address(factory));
 
-        // Define the parameters for the first PumpOutToken
+        // Define the token names and symbols for the tokens to be created
         string memory name1 = "Sample Multi Token";
         string memory symbol1 = "SMTKN";
-        uint256 availableSupply1 = 800_000_000; // Example available supply
-        uint256 lpSupply1 = 200_000_000; // Example LP supply
-        uint256 kValue1 = 69_000; // Bonding curve multiplier
-        uint256 protocolFeePercentage1 = 100; // 1% fee in basis points
-        address protocolFeeCollector1 = msg.sender; // For the script, use msg.sender
 
-        // Deploy sample token 1
+        // Deploy the first token using the default parameters in the factory
         uint256 requiredAmount = factory.getRequiredAmount(chainIds);
-
-        address token1 = factory.createPumpOutToken{value: requiredAmount}(
-            name1,
-            symbol1,
-            availableSupply1,
-            lpSupply1,
-            kValue1,
-            protocolFeePercentage1,
-            protocolFeeCollector1,
-            chainIds
-        );
+        address token1 = factory.createPumpOutToken{value: requiredAmount}(name1, symbol1, chainIds);
         console.log("Token 1 deployed at address:", address(token1));
 
-        // Define parameters for the second PumpOutToken
+        // Define parameters for the second token
         string memory name2 = "Second Multi Token";
         string memory symbol2 = "S2MTKN";
-        uint256 availableSupply2 = 1_000_000_000;
-        uint256 lpSupply2 = 250_000_000;
-        uint256 kValue2 = 70_000;
-        uint256 protocolFeePercentage2 = 200; // 2% fee in basis points
-        address protocolFeeCollector2 = msg.sender;
 
-        // Deploy sample token 2
+        // Deploy the second token using the default parameters in the factory
         uint256 requiredAmount2 = factory.getRequiredAmount(chainIds);
-
-        address token2 = factory.createPumpOutToken{value: requiredAmount2}(
-            name2,
-            symbol2,
-            availableSupply2,
-            lpSupply2,
-            kValue2,
-            protocolFeePercentage2,
-            protocolFeeCollector2,
-            chainIds
-        );
+        address token2 = factory.createPumpOutToken{value: requiredAmount2}(name2, symbol2, chainIds);
         console.log("Token 2 deployed at address:", address(token2));
 
         // Stop broadcasting
