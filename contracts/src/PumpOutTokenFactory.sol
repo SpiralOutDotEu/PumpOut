@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache 2
 pragma solidity >=0.6.12 <0.9.0;
 
-import "./PumpOutToken.sol";
-import "./PeerToken.sol";
+import "./TokenDeployer.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract PumpOutTokenFactory is Ownable {
+    TokenDeployer public tokenDeployer;
+
     event PumpOutTokenCreated(
         address indexed tokenAddress,
         string name,
@@ -49,11 +50,13 @@ contract PumpOutTokenFactory is Ownable {
         address _operatorOwner,
         uint256[] memory chainIds,
         uint256[] memory prices,
-        uint256 _minFee
+        uint256 _minFee,
+        address _tokenDeployer
     ) Ownable(initialOwner) {
         operatorMinter = _operatorMinter;
         operatorOwner = _operatorOwner;
         protocolFeeCollector = initialOwner; // Set default protocol fee collector to the initial owner
+        tokenDeployer = TokenDeployer(_tokenDeployer);
 
         require(chainIds.length == prices.length, "Chain IDs and prices length mismatch");
         for (uint256 i = 0; i < chainIds.length; i++) {
@@ -119,7 +122,7 @@ contract PumpOutTokenFactory is Ownable {
             revert InsufficientPayment();
         }
 
-        PumpOutToken newToken = new PumpOutToken(
+        address newToken = tokenDeployer.deployPumpOutToken(
             name,
             symbol,
             operatorMinter,
@@ -132,7 +135,7 @@ contract PumpOutTokenFactory is Ownable {
         );
 
         emit PumpOutTokenCreated(
-            address(newToken),
+            newToken,
             name,
             symbol,
             operatorMinter,
@@ -144,7 +147,7 @@ contract PumpOutTokenFactory is Ownable {
             chainIds
         );
 
-        return address(newToken);
+        return newToken;
     }
 
     function createPeerToken(string memory name, string memory symbol, uint256 parentChain, address parentToken)
@@ -152,11 +155,11 @@ contract PumpOutTokenFactory is Ownable {
         onlyOwner
         returns (address)
     {
-        PeerToken newToken = new PeerToken(name, symbol, operatorMinter, operatorOwner);
+        address newToken = tokenDeployer.deployPeerToken(name, symbol, operatorMinter, operatorOwner);
 
-        emit PeerTokenCreated(address(newToken), name, symbol, operatorMinter, parentChain, parentToken);
+        emit PeerTokenCreated(newToken, name, symbol, operatorMinter, parentChain, parentToken);
 
-        return address(newToken);
+        return newToken;
     }
 
     function withdrawEarnings() external onlyOwner {

@@ -31,6 +31,7 @@ contract PumpOutTokenFactoryTest is Test {
     error InsufficientPayment();
 
     PumpOutTokenFactory factory;
+    TokenDeployer tokenDeployer;
     address owner; // Simulate an owner account
     address operatorMinter;
     address operatorOwner;
@@ -52,8 +53,10 @@ contract PumpOutTokenFactoryTest is Test {
         chainsToDeploy = [1, 56]; // Ethereum and Binance
 
         // Deploy the factory contract with the owner, operatorMinter, operatorOwner, chainIds, prices, and minFee
-        vm.prank(owner); // Simulate the owner deploying the contract
-        factory = new PumpOutTokenFactory(owner, operatorMinter, operatorOwner, chainIds, prices, minFee);
+        vm.startPrank(owner); // Simulate the owner deploying the contract
+        tokenDeployer = new TokenDeployer();
+        factory = new PumpOutTokenFactory(owner, operatorMinter, operatorOwner, chainIds, prices, minFee, address(tokenDeployer));
+        vm.stopPrank();
     }
 
     function testSetChainPrice() public {
@@ -188,5 +191,28 @@ contract PumpOutTokenFactoryTest is Test {
 
         address tokenAddress = factory.createPeerToken("Peer Token", "PTR", parentChain, parentToken);
         assertTrue(tokenAddress != address(0));
+    }
+
+    function testCreateAnotherPumpOutToken() public {
+        // Deploy the first token
+        uint256 requiredAmount = factory.getRequiredAmount(chainsToDeploy);
+        vm.deal(owner, requiredAmount);
+        vm.prank(owner);
+        address firstTokenAddress =
+            factory.createPumpOutToken{value: requiredAmount}("First Token", "FTK", chainsToDeploy);
+
+        // Assert the first token was successfully created
+        assertTrue(firstTokenAddress != address(0));
+
+        // Deploy a second token with a different name and symbol
+        uint256 secondRequiredAmount = factory.getRequiredAmount(chainsToDeploy);
+        vm.deal(owner, secondRequiredAmount);
+        vm.prank(owner);
+        address secondTokenAddress =
+            factory.createPumpOutToken{value: secondRequiredAmount}("Second Token", "STK", chainsToDeploy);
+
+        // Assert the second token was successfully created and has a different address
+        assertTrue(secondTokenAddress != address(0));
+        assertTrue(secondTokenAddress != firstTokenAddress);
     }
 }
