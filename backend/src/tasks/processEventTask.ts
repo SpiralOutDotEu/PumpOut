@@ -2,6 +2,7 @@ import { processEVMEvent } from '../services/evmService';
 import { processSolanaEvent } from '../services/solanaService';
 import { processSuiEvent } from '../services/suiService';
 import { addChain, createProject } from '../services/nttCliService';
+import { ADD_CHAIN_ID_MAP } from '../constants/constants';
 
 interface EventData {
     network: string;
@@ -24,8 +25,14 @@ async function processEventTask(eventData: EventData): Promise<any> {
         const { basePath, projectName } = await createProject(eventData.network, eventData.tokenAddress);
         console.log(`Project created with base path: ${basePath} and project name: ${projectName}`);
 
+        // Map network id to string
+        const chainString = ADD_CHAIN_ID_MAP[`${eventData.network}`];  // Convert chain ID to a string and look up in the map
+        if (!chainString) {
+            throw new Error(`Chain ID ${eventData.network} not mapped to a known network`);
+        }
+
         // Step 2: Run the NTT CLI add-chain for the network that triggered this event
-        await addChain(eventData.network, projectName, basePath, eventData.tokenAddress);
+        await addChain(chainString, projectName, basePath, eventData.tokenAddress);
         console.log(`Chain added for the network: ${eventData.network}`);
 
         // Step 3: Process each chain ID with the created project path
