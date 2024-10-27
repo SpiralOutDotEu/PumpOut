@@ -24,6 +24,7 @@ class SQLiteDatabase implements DatabaseInterface {
           symbol TEXT,
           nttDeployment JSON DEFAULT NULL,
           lpData JSON DEFAULT NULL,
+          wormholeConnectConfig JSON DEFAULT NULL,
           logo TEXT DEFAULT NULL
         )
       `);
@@ -33,24 +34,26 @@ class SQLiteDatabase implements DatabaseInterface {
     public async addToken(data: TokenData): Promise<void> {
         const db = await this.dbPromise;
         await db.run(
-            `INSERT INTO tokens (network, tokenAddress, name, symbol, nttDeployment, lpData, logo) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO tokens (network, tokenAddress, name, symbol, nttDeployment, lpData, wormholeConnectConfig, logo) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             data.network,
             data.tokenAddress,
             data.name,
             data.symbol,
             data.nttDeployment ? JSON.stringify(data.nttDeployment) : null,
             data.lpData ? JSON.stringify(data.lpData) : null,
+            data.wormholeConnectConfig ? JSON.stringify(data.wormholeConnectConfig) : null,
             data.logo || null
         );
     }
 
-    public async getTokenByAddress(tokenAddress: string): Promise<TokenData | null> {
+    public async getTokenByAddress(network: string, tokenAddress: string): Promise<TokenData | null> {
         const db = await this.dbPromise;
         const row = await db.get(
-            `SELECT network, tokenAddress, name, symbol, nttDeployment, lpData, logo 
-         FROM tokens WHERE tokenAddress = ?`,
-            tokenAddress
+            `SELECT network, tokenAddress, name, symbol, nttDeployment, lpData, wormholeConnectConfig, logo 
+           FROM tokens WHERE tokenAddress = ? AND network = ?`,
+            tokenAddress,
+            network
         );
         return row
             ? {
@@ -66,6 +69,16 @@ class SQLiteDatabase implements DatabaseInterface {
         await db.run(
             `UPDATE tokens SET nttDeployment = ? WHERE tokenAddress = ? AND network = ?`,
             JSON.stringify(nttDeployment),
+            tokenAddress,
+            network
+        );
+    }
+
+    public async updateWormholeConnectConfig(network: string, tokenAddress: string, wormholeConnectConfig: Record<string, any>): Promise<void> {
+        const db = await this.dbPromise;
+        await db.run(
+            `UPDATE tokens SET wormholeConnectConfig = ? WHERE tokenAddress = ? AND network = ?`,
+            JSON.stringify(wormholeConnectConfig),
             tokenAddress,
             network
         );
