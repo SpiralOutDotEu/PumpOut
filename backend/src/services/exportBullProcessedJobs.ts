@@ -8,9 +8,10 @@ const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 // Define your queues
 const checkEventsQueue = new Bull('check-events', { redis: redisUrl });
 const processEventsQueue = new Bull('process-events', { redis: redisUrl });
+const notifyFrontend = new Bull('notify-frontend', { redis: redisUrl });
 
 // TODO: Add more queues
-const allQueues = [checkEventsQueue, processEventsQueue];
+const allQueues = [checkEventsQueue, processEventsQueue, notifyFrontend];
 
 // Define the structure of the jobs data
 interface JobData {

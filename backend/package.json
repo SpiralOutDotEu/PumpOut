@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@bull-board/express": "^6.2.1",
+    "axios": "^1.7.7",
     "bull": "^4.16.3",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",

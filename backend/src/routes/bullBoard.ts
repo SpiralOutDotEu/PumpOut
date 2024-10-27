@@ -15,6 +15,7 @@ export function setupBullBoard(app: Express): void {
       new BullAdapter(getTaskQueue("create-project")),
       new BullAdapter(getTaskQueue("generate-solana-key")),
       new BullAdapter(getTaskQueue("process-events")),
+      new BullAdapter(getTaskQueue("notify-frontend")),
       // Add other queues here
     ],
     serverAdapter,

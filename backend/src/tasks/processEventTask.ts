@@ -6,6 +6,7 @@ import { ADD_CHAIN_ID_MAP } from '../constants/constants';
 import { updateLimits } from '../services/limitUpdaterService';
 import * as fs from 'fs';
 import * as path from 'path';
+import taskManager from './taskManager';
 
 interface EventData {
     network: string;
@@ -98,6 +99,19 @@ async function processEventTask(eventData: EventData): Promise<any> {
         // After pushing the project file
         await setMinterForEVMChains(projectFilePath);
         console.log("Minter set for all EVM chains in the project file.");
+
+        // After pushing the project file and setting the minter, notify the frontend
+
+        await taskManager.startTask({
+            taskName: "notify-frontend",
+            params: {
+                updatedProjectData,
+                network: eventData.network,        // Pass the chain ID (network)
+                tokenAddress: eventData.tokenAddress, // Pass the token address
+            },
+        });
+
+        console.log("Frontend notification task added to the queue.");
 
         return `All chains processed successfully for event: ${eventData.tokenAddress}`;
     } catch (error) {
