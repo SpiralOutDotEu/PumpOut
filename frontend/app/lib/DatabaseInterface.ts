@@ -14,7 +14,7 @@ export interface DatabaseInterface {
     addToken(data: TokenData): Promise<void>;
     getTokenByAddress(network: string, tokenAddress: string): Promise<TokenData | null>;
     updateNttDeployment(network: string, tokenAddress: string, nttDeployment: Record<string, any>): Promise<void>;
-    updateWormholeConnectConfig(network: string, tokenAddress: string, nttDeployment: Record<string, any>): Promise<void>;
+    updateWormholeConnectConfig(network: string, tokenAddress: string, wormholeConnectConfig: Record<string, any>): Promise<void>;
     updateLpData(network: string, tokenAddress: string, lpData: Record<string, any>): Promise<void>;
     close(): Promise<void>;
-  }
+}

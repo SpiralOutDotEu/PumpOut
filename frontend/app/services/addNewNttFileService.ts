@@ -37,11 +37,12 @@ export async function addNewNttFileService(data: NttData): Promise<WormholeConne
 // Helper function to build routes
 function buildRoutes(chainsData: Record<string, ChainData>): Route[] {
     const routes: Route[] = [];
-    
+    console.log("chainsData: ", chainsData)
+
     Object.keys(chainsData).forEach((chainKey) => {
         const chain = chainsData[chainKey];
         const tokenKey = `WSV${chainKey.toLowerCase()}`;
-        
+
         const route: Route = {
             tokens: {
                 [tokenKey]: [{
@@ -62,11 +63,11 @@ function buildRoutes(chainsData: Record<string, ChainData>): Route[] {
 // Helper function to build tokensConfig
 function buildTokensConfig(chainsData: Record<string, ChainData>): Record<string, TokenConfig> {
     const tokensConfig: Record<string, TokenConfig> = {};
-    
+
     Object.keys(chainsData).forEach((chainKey) => {
         const chain = chainsData[chainKey];
         const tokenKey = `WSV${chainKey.toLowerCase()}`;
-        
+
         tokensConfig[tokenKey] = {
             key: tokenKey,
             symbol: 'WSV',
