@@ -4,6 +4,7 @@ import "dotenv/config";
 
 const BASE_PATH = process.env.BASE_PATH || './projects';
 const NETWORK_ENV = process.env.NETWORK_ENV || 'Testnet';  // 'Mainnet' or 'Testnet'
+const SOLANA_PAYER = process.env.SOLANA_PAYER as string;
 
 /**
  * Run a shell command and return the stdout or throw an error if it fails.
@@ -65,7 +66,7 @@ export async function createProject(networkId: string, tokenAddress: string): Pr
  */
 export async function addChain(chainIdString: string, projectFile: string, projectPath: string, tokenAddress: string): Promise<void> {
   const command = 'ntt';
-  const args = ['add-chain', chainIdString, '--latest', '--mode', 'burning', '--path', projectFile, '--token', tokenAddress];
+  const args = ['add-chain', chainIdString, '--latest', '--mode', 'burning', '--path', projectFile, '--token', tokenAddress, '--payer', SOLANA_PAYER];
 
   try {
     console.log(`Running NTT add-chain for ${chainIdString}`);
@@ -78,7 +79,26 @@ export async function addChain(chainIdString: string, projectFile: string, proje
   }
 }
 
+/**
+ * Push the project to the network using the NTT CLI command 'ntt push'
+ */
+export async function pushProject(projectFile: string, basePath: string): Promise<void> {
+  const command = 'ntt';
+  const args = ['push', '--path', projectFile, '--payer', SOLANA_PAYER];
+
+  try {
+    console.log(`Running NTT push for project file: ${projectFile}`);
+    await spawnPromise(command, args, { cwd: basePath });
+    console.log(`NTT push successful for project file: ${projectFile}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : `Error running NTT push for ${projectFile}: Unknown`;
+    console.error(`Error running NTT push for ${projectFile}:`, error);
+    throw new Error(`Failed to push project ${projectFile}: ${errorMessage}`);
+  }
+}
+
 export default {
   createProject,
   addChain,
+  pushProject
 };
