@@ -1,4 +1,5 @@
 import sqlite3 from "sqlite3";
+import "../polyfills"
 
 // // Replace this line
 // export default new Database();
