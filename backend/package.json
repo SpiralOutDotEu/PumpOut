@@ -9,7 +9,8 @@
     "dev:server": "nodemon --exec ts-node src/index.ts",
     "dev:worker": "nodemon --exec ts-node src/workers/worker.ts",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:worker\"",
-    "run-limit-updater": "ts-node src/scripts/runLimitUpdater.ts"
+    "limit-updater": "ts-node src/scripts/runLimitUpdater.ts",
+    "set-minter": "ts-node src/scripts/runSetMinter.ts"
   },
   "dependencies": {
     "@bull-board/express": "^6.2.1",
