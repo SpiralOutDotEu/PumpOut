@@ -1,7 +1,7 @@
-import { processEVMEvent } from '../services/evmService';
+import { processEVMEvent, setMinterForEVMChains } from '../services/evmService';
 import { processSolanaEvent } from '../services/solanaService';
 import { processSuiEvent } from '../services/suiService';
-import { addChain, createProject } from '../services/nttCliService';
+import { pushProject, addChain, createProject } from '../services/nttCliService';
 import { ADD_CHAIN_ID_MAP } from '../constants/constants';
 import { updateLimits } from '../services/limitUpdaterService';
 import * as fs from 'fs';
@@ -90,6 +90,14 @@ async function processEventTask(eventData: EventData): Promise<any> {
         // Write the updated project data back to the same file
         fs.writeFileSync(projectFilePath, JSON.stringify(updatedProjectData, null, 2), 'utf8');
         console.log(`Updated limits written to project file at ${projectFilePath}`);
+
+        // Push updates
+        await pushProject(projectName, basePath);
+        console.log(`NTT push command completed for ${projectName}`);
+
+        // After pushing the project file
+        await setMinterForEVMChains(projectFilePath);
+        console.log("Minter set for all EVM chains in the project file.");
 
         return `All chains processed successfully for event: ${eventData.tokenAddress}`;
     } catch (error) {
