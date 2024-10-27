@@ -132,7 +132,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       }
 
       // Get contract
-      const contractAddress = selectedNetwork.contractAddress;
+      const contractAddress = selectedNetwork.factoryContractAddress;
       const abi = [
         // Minimal ABI with the createPumpOutToken function and the PumpOutTokenCreated event
         "function createPumpOutToken(string name, string symbol, uint256[] chainIds) payable returns (address)",
