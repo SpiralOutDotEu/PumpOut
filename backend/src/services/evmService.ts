@@ -44,12 +44,13 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
         const contract = new ethers.Contract(contractAddress, contractAbi.abi, wallet);
 
         // Step 4: Estimate gas and send the transaction
+        // createPeerToken(string memory name, string memory symbol, uint256 parentChain, address parentToken)
         const gasEstimate = await contract.createPeerToken.estimateGas(
-            name, symbol, minter, wallet.address, parseInt(chainId), tokenAddress
+            name, symbol, parseInt(chainId), tokenAddress
         );
 
         const tx = await contract.createPeerToken(
-            name, symbol, minter, wallet.address, parseInt(chainId), tokenAddress,
+            name, symbol, parseInt(chainId), tokenAddress,
             {
                 gasLimit: gasEstimate,
                 gasPrice: (await provider.getFeeData()).gasPrice,
@@ -62,8 +63,8 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
         // Retrieve the token address from the emitted event
         const createdTokenAddress = receipt.logs[1].args[0];
         const creationHash = receipt.hash;
-        console.log("creationHash: ", creationHash)
-        console.log("createdTokenAddress: ", createdTokenAddress, " typeOf: ", typeof (createdTokenAddress))
+        console.log("Transaction Hash (creationHash): ", creationHash);
+        console.log("Created Token Address (createdTokenAddress): ", createdTokenAddress);
 
         // Ensure the createdTokenAddress is valid
         if (!createdTokenAddress) {
@@ -73,11 +74,12 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
         console.log(`Peer token created on chain ${chainId}: ${createdTokenAddress}`);
 
         // Step 5: Use the centralized addChain function from nttCliService
-        const chainString = ADD_CHAIN_ID_MAP[chainId];  // Convert chain ID to string representation
+        const chainString = ADD_CHAIN_ID_MAP[`${chainId}`];  // Convert chain ID to a string and look up in the map
         if (!chainString) {
             throw new Error(`Chain ID ${chainId} not mapped to a known network`);
         }
 
+        // Call addChain with detailed logging
         await addChain(chainString, projectFile, projectPath, createdTokenAddress);
 
         return {
