@@ -25,6 +25,7 @@ interface EVMEventData {
 
 export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { chainId, projectPath, projectFile, name, symbol, minter, tokenAddress } = eventData;
 
         // Step 1: Get the RPC URL, Contract Address, and Private Key from environment variables
