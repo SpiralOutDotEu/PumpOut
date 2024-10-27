@@ -3,6 +3,9 @@ import { processSolanaEvent } from '../services/solanaService';
 import { processSuiEvent } from '../services/suiService';
 import { addChain, createProject } from '../services/nttCliService';
 import { ADD_CHAIN_ID_MAP } from '../constants/constants';
+import { updateLimits } from '../services/limitUpdaterService';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface EventData {
     network: string;
@@ -74,6 +77,19 @@ async function processEventTask(eventData: EventData): Promise<any> {
 
             console.log(`Event processed for chain ID ${chainId}: ${JSON.stringify(result)}`);
         }
+
+        // Step 4: Update the limits in the project file at basePath
+        const projectFilePath = path.join(basePath, `${projectName}.json`);
+
+        // Read the current project data from file
+        const projectData = JSON.parse(fs.readFileSync(projectFilePath, 'utf8'));
+
+        // Update the limits using the updateLimits service
+        const updatedProjectData = updateLimits(projectData);
+
+        // Write the updated project data back to the same file
+        fs.writeFileSync(projectFilePath, JSON.stringify(updatedProjectData, null, 2), 'utf8');
+        console.log(`Updated limits written to project file at ${projectFilePath}`);
 
         return `All chains processed successfully for event: ${eventData.tokenAddress}`;
     } catch (error) {
