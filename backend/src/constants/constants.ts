@@ -15,3 +15,8 @@ export const ADD_CHAIN_ID_MAP: { [key: string]: string } = {
   '103': 'Sui', // TODO: check chain ID sui testnet
   // Add other mappings as necessary
 };
+
+// Reverse lookup map (Chain name to Chain ID)
+export const CHAIN_NAME_TO_ID_MAP: { [key: string]: string } = Object.fromEntries(
+  Object.entries(ADD_CHAIN_ID_MAP).map(([id, name]) => [name, id])
+);
