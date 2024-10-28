@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PumpOutTokenABI from "../../../contracts/out/PumpOutToken.sol/PumpOutToken.json";
 import BridgeModal from "./BridgeModal";
@@ -18,6 +19,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   const [estimatedEth, setEstimatedEth] = useState(0);
   const [slippage, setSlippage] = useState(1); // 1% slippage default
   const [isBridgeModalOpen, setIsBridgeModalOpen] = useState(false);
+  const [tokenBalance, setTokenBalance] = useState(0);
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const contract = new ethers.Contract(
@@ -26,12 +28,34 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
     provider
   );
 
+  useEffect(() => {
+    if (tab === "sell") {
+      getUserTokenBalance();
+    }
+  }, [tab]);
+
   const handleTabChange = (newTab: string) => {
     setTab(newTab);
     setEthAmount(0);
     setTokenAmount(0);
     setEstimatedTokens(0);
     setEstimatedEth(0);
+  };
+
+  const getUserTokenBalance = async () => {
+    try {
+      const signer = await provider.getSigner();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const balance = await contract
+        .connect(provider)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .balanceOf(signer.address);
+      setTokenBalance(Number(ethers.formatUnits(balance, 18)));
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+    }
   };
 
   const handleInputChange = async (value: number) => {
@@ -81,7 +105,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
       <div className="flex space-x-2 mb-4">
         <button
           onClick={() => handleTabChange("buy")}
-          className={`px-4 py-2 rounded transition-colors duration-150 ${
+          className={`px-4 py-2 rounded transition-colors duration-150 w-1/3 ${
             tab === "buy"
               ? "bg-green-500 text-white"
               : "bg-gray-700 text-green-300"
@@ -91,7 +115,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
         </button>
         <button
           onClick={() => handleTabChange("sell")}
-          className={`px-4 py-2 rounded transition-colors duration-150 ${
+          className={`px-4 py-2 rounded transition-colors duration-150 w-1/3 ${
             tab === "sell"
               ? "bg-red-500 text-white"
               : "bg-gray-700 text-red-300"
@@ -101,7 +125,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
         </button>
         <button
           onClick={() => setIsBridgeModalOpen(true)}
-          className="px-4 py-2 rounded bg-blue-700 text-blue-300 hover:bg-blue-500 hover:text-white"
+          className="px-4 py-2 rounded w-1/3 bg-blue-700 text-blue-300 hover:bg-blue-500 hover:text-white"
         >
           Bridge
         </button>
@@ -122,6 +146,26 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
           }
         />
       </div>
+
+      {/* Sell Tab - Token Balance and Quick Select */}
+      {tab === "sell" && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-400">Token Balance: {tokenBalance}</p>
+          <div className="flex justify-between mt-2">
+            {[25, 50, 75, 100].map((percentage) => (
+              <button
+                key={percentage}
+                onClick={() =>
+                  setTokenAmount((tokenBalance * percentage) / 100)
+                }
+                className="bg-gray-600 text-white py-1 px-2 rounded-md text-sm hover:bg-gray-500"
+              >
+                {percentage}%
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Estimated Result */}
       <div className="mb-4">
@@ -150,18 +194,22 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
       {/* Action Button */}
       <button
         onClick={executeTrade}
-        className="w-full bg-green-500 text-white py-2 rounded-md font-bold"
+        className={`w-full ${
+          tab === "buy" ? "bg-green-500" : "bg-red-500"
+        } text-white py-2 rounded-md font-bold`}
       >
-        Place Trade
+        {tab === "buy" ? "Buy Tokens" : "Sell Tokens"}
       </button>
 
       {/* Bridge Modal */}
-      <BridgeModal
-        isOpen={isBridgeModalOpen}
-        onClose={() => setIsBridgeModalOpen(false)}
-        chainId={network}
-        tokenAddress={tokenAddress}
-      />
+      {isBridgeModalOpen && (
+        <BridgeModal
+          isOpen={isBridgeModalOpen}
+          onClose={() => setIsBridgeModalOpen(false)}
+          chainId={network}
+          tokenAddress={tokenAddress}
+        />
+      )}
     </div>
   );
 };
