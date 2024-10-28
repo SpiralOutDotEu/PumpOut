@@ -80,7 +80,7 @@ async function processEventTask(eventData: EventData): Promise<any> {
         }
 
         // Step 4: Update the limits in the project file at basePath
-        const projectFilePath = path.join(basePath, `${projectName}.json`);
+        const projectFilePath = path.join(basePath, `${projectName}`);
 
         // Read the current project data from file
         const projectData = JSON.parse(fs.readFileSync(projectFilePath, 'utf8'));
@@ -105,7 +105,7 @@ async function processEventTask(eventData: EventData): Promise<any> {
         await taskManager.startTask({
             taskName: "notify-frontend",
             params: {
-                updatedProjectData,
+                projectFilePath,
                 network: eventData.network,        // Pass the chain ID (network)
                 tokenAddress: eventData.tokenAddress, // Pass the token address
             },
