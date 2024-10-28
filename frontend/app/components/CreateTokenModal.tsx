@@ -160,15 +160,26 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       }
 
       if (!newTokenAddress && receipt.logs) {
-        console.log("receipt.logs: ", receipt.logs)
-        console.log("new address: ", receipt.logs[0].address)
-        newTokenAddress = receipt.logs[0].address
-        
+        console.log("receipt.logs: ", receipt.logs);
+        newTokenAddress = receipt.logs[0].address;
       }
 
       if (newTokenAddress) {
         setNewTokenAddress(newTokenAddress);
         console.log("New token address from event:", newTokenAddress);
+
+        // Save token data to database
+        await fetch("/api/tokens/addToken", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            network: selectedNetwork.chainId,
+            tokenAddress: newTokenAddress,
+            name,
+            symbol,
+            logo: logo ? URL.createObjectURL(logo) : "",
+          }),
+        });
       } else {
         setError("Failed to retrieve new token address from event or logs.");
       }
@@ -300,37 +311,22 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
         </div>
       </form>
 
-      {/* Transaction Link */}
+      {/* Transaction Result */}
       {transactionHash && (
         <div className="mt-4">
-          <p>Transaction submitted:</p>
+          <p className="text-sm text-gray-400">Transaction submitted:</p>
           <a
             href={`${selectedNetwork.explorerUrl}/tx/${transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 underline"
+            className="block text-blue-600 underline text-ellipsis overflow-hidden"
           >
             View Transaction
-          </a>
-        </div>
-      )}
-
-      {/* New Token Address */}
-      {newTokenAddress && (
-        <div className="mt-4">
-          <p>New Token Address:</p>
-          <a
-            href={`${selectedNetwork.explorerUrl}/address/${newTokenAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline"
-          >
-            {newTokenAddress}
           </a>
           <div className="mt-2">
             <a
               href={`/tokens/${selectedNetwork.chainId}/${newTokenAddress}`}
-              className="text-blue-600 underline"
+              className="block text-green-500 underline font-semibold"
             >
               Go to Token Page
             </a>
