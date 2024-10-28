@@ -10,7 +10,6 @@ interface TradePanelProps {
   tokenAddress: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   const [tab, setTab] = useState("buy"); // "buy" or "sell"
   const [ethAmount, setEthAmount] = useState(0);
@@ -77,21 +76,25 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   };
 
   return (
-    <div className="bg-gray-800 p-4 rounded-md text-white">
+    <div className="bg-gray-800 p-4 rounded-md text-white border-2 border-gray-600 shadow-lg min-w-[360px] mb-4">
       {/* Tabs */}
       <div className="flex space-x-2 mb-4">
         <button
           onClick={() => handleTabChange("buy")}
-          className={`px-4 py-2 rounded ${
-            tab === "buy" ? "bg-green-500" : "bg-gray-700"
+          className={`px-4 py-2 rounded transition-colors duration-150 ${
+            tab === "buy"
+              ? "bg-green-500 text-white"
+              : "bg-gray-700 text-green-300"
           }`}
         >
           Buy
         </button>
         <button
           onClick={() => handleTabChange("sell")}
-          className={`px-4 py-2 rounded ${
-            tab === "sell" ? "bg-green-500" : "bg-gray-700"
+          className={`px-4 py-2 rounded transition-colors duration-150 ${
+            tab === "sell"
+              ? "bg-red-500 text-white"
+              : "bg-gray-700 text-red-300"
           }`}
         >
           Sell
@@ -164,3 +167,6 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
 };
 
 export default TradePanel;
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
