@@ -31,7 +31,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [walletChainId, setWalletChainId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Get the chainId from the wallet
     async function getChainId() {
       if (typeof window !== "undefined" && window.ethereum) {
         try {
@@ -46,7 +45,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     }
     getChainId();
 
-    // Listen for chain changes
     if (typeof window !== "undefined" && window.ethereum) {
       window.ethereum.on("chainChanged", (chainId: string) => {
         setWalletChainId(parseInt(chainId, 16));
@@ -62,9 +60,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     if (network) {
       setSelectedNetwork(network);
 
-      // Check if wallet is connected to the same network
       if (walletChainId !== network.chainId) {
-        // Propose to switch network
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
@@ -72,7 +68,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
           });
           setWalletChainId(network.chainId);
         } catch (switchError: any) {
-          // This error code indicates that the chain has not been added to MetaMask.
           if (switchError.code === 4902) {
             try {
               await window.ethereum.request({
@@ -96,10 +91,8 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Leave empty function for now
-    // TODO: handle image
+    setLogo(e.target.files ? e.target.files[0] : null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,7 +116,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Ensure connected network matches selected network
       const network = await provider.getNetwork();
       if (Number(network.chainId) !== selectedNetwork.chainId) {
         setError(`Please switch your wallet to ${selectedNetwork.name}`);
@@ -131,44 +123,59 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
         return;
       }
 
-      // Get contract
       const contractAddress = selectedNetwork.factoryContractAddress;
       const abi = [
-        // Minimal ABI with the createPumpOutToken function and the PumpOutTokenCreated event
         "function createPumpOutToken(string name, string symbol, uint256[] chainIds) payable returns (address)",
-        "event PumpOutTokenCreated(address indexed tokenAddress, string name, string symbol, uint256[] chainIds)",
+        "function getRequiredAmount(uint256[] chainIds) view returns (uint256)",
+        "event PumpOutTokenCreated(address indexed tokenAddress, string name, string symbol, address minter, uint256 availableSupply, uint256 lpSupply, uint256 k, uint256 protocolFeePercentage, address protocolFeeCollector, uint256[] chainIds)",
       ];
 
       const contract = new ethers.Contract(contractAddress, abi, signer);
 
-      // Calculate requiredAmount
-      const requiredAmount = ethers.parseEther("0"); // Adjust if needed based on getRequiredAmount function
+      console.log(
+        "Fetching required amount from getRequiredAmount function..."
+      );
+      const requiredAmount = await contract.getRequiredAmount(chainIds);
+      console.log(
+        "Required amount for transaction:",
+        requiredAmount.toString()
+      );
 
       const tx = await contract.createPumpOutToken(name, symbol, chainIds, {
         value: requiredAmount,
       });
       setTransactionHash(tx.hash);
 
-      // Wait for transaction to be mined
       const receipt = await tx.wait();
+      console.log("Transaction receipt:", receipt);
 
-      // Get the event from the receipt
       let newTokenAddress = "";
-      for (const event of receipt.events) {
-        if (event.event === "PumpOutTokenCreated") {
-          newTokenAddress = event.args?.tokenAddress;
-          setNewTokenAddress(newTokenAddress);
-          break;
+      if (receipt.events && Array.isArray(receipt.events)) {
+        for (const event of receipt.events) {
+          if (event.event === "PumpOutTokenCreated") {
+            newTokenAddress = event.args?.tokenAddress;
+            break;
+          }
         }
       }
 
-      if (!newTokenAddress) {
-        setError("Failed to retrieve new token address from event.");
+      if (!newTokenAddress && receipt.logs) {
+        console.log("receipt.logs: ", receipt.logs)
+        console.log("new address: ", receipt.logs[0].address)
+        newTokenAddress = receipt.logs[0].address
+        
+      }
+
+      if (newTokenAddress) {
+        setNewTokenAddress(newTokenAddress);
+        console.log("New token address from event:", newTokenAddress);
+      } else {
+        setError("Failed to retrieve new token address from event or logs.");
       }
 
       setIsSubmitting(false);
     } catch (err: any) {
-      console.error(err);
+      console.error("Transaction error details:", err);
       setError(err.message || "An error occurred.");
       setIsSubmitting(false);
     }
@@ -257,11 +264,11 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                   disabled={!option.supported}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (e.target.checked) {
-                      setChainIds([...chainIds, value]);
-                    } else {
-                      setChainIds(chainIds.filter((id) => id !== value));
-                    }
+                    setChainIds(
+                      e.target.checked
+                        ? [...chainIds, value]
+                        : chainIds.filter((id) => id !== value)
+                    );
                   }}
                   className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
                 />
