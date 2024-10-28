@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 import PumpOutTokenABI from "../../../contracts/out/PumpOutToken.sol/PumpOutToken.json";
+import BridgeModal from "./BridgeModal";
 
 interface TradePanelProps {
   network: string;
@@ -17,6 +18,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   const [estimatedTokens, setEstimatedTokens] = useState(0);
   const [estimatedEth, setEstimatedEth] = useState(0);
   const [slippage, setSlippage] = useState(1); // 1% slippage default
+  const [isBridgeModalOpen, setIsBridgeModalOpen] = useState(false);
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const contract = new ethers.Contract(
@@ -94,6 +96,12 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
         >
           Sell
         </button>
+        <button
+          onClick={() => setIsBridgeModalOpen(true)}
+          className="px-4 py-2 rounded bg-blue-700 text-blue-300 hover:bg-blue-500 hover:text-white"
+        >
+          Bridge
+        </button>
       </div>
 
       {/* Input for ETH or Token Amount */}
@@ -143,6 +151,14 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
       >
         Place Trade
       </button>
+
+      {/* Bridge Modal */}
+      <BridgeModal
+        isOpen={isBridgeModalOpen}
+        onClose={() => setIsBridgeModalOpen(false)}
+        chainId={network}
+        tokenAddress={tokenAddress}
+      />
     </div>
   );
 };
