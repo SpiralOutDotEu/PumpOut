@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import CreateTokenModal from "./CreateTokenModal";
 import { useWallet } from "../context/WalletProvider";
+import { useRouter } from "next/navigation";
 
 const Header: React.FC = () => {
+  const router = useRouter();
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isCreateTokenOpen, setIsCreateTokenOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown menu
@@ -39,8 +41,10 @@ const Header: React.FC = () => {
 
   return (
     <header className="flex items-center justify-between p-4 bg-gray-900 relative shadow-2xl">
-      {/* Left: Brand Name */}
-      <div className="text-2xl font-bold">PUMPOUT</div>
+      {/* Left: Brand Name (Clickable to go Home) */}
+      <button className="text-2xl font-bold" onClick={() => router.push("/")}>
+        PUMPOUT
+      </button>
 
       {/* Middle: Links */}
       <div className="space-x-4">
