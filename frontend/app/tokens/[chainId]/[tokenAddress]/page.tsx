@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
+import TradePanel from "@/app/components/TradePanel";
 
 const TokenPage: React.FC = () => {
   const pathname = usePathname();
@@ -42,7 +43,7 @@ const TokenPage: React.FC = () => {
             </div>
           </div>
         </div>
-
+        <TradePanel network={chainId} tokenAddress={tokenAddress} />
         {/* Bonding Curve Data */}
         <div className="bg-gray-700 p-4 rounded-md">
           <p className="text-lg font-bold">Bonding Curve Data</p>
