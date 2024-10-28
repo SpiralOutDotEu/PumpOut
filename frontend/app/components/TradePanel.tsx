@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ethers } from "ethers";
 import PumpOutTokenABI from "../../../contracts/out/PumpOutToken.sol/PumpOutToken.json";
 import BridgeModal from "./BridgeModal";
-import { WormholeConnectConfig } from "@wormhole-foundation/wormhole-connect";
 
 interface TradePanelProps {
   network: string;
@@ -19,8 +18,6 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   const [estimatedEth, setEstimatedEth] = useState(0);
   const [slippage, setSlippage] = useState(1); // 1% slippage default
   const [isBridgeModalOpen, setIsBridgeModalOpen] = useState(false);
-  const [wormholeConfig, setWormholeConfig] =
-    useState<WormholeConnectConfig | null>(null);
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const contract = new ethers.Contract(
@@ -28,36 +25,6 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
     PumpOutTokenABI.abi,
     provider
   );
-
-  useEffect(() => {
-    const fetchWormholeConfig = async () => {
-      try {
-        const response = await fetch(
-          `/api/tokens/getTokenByAddress?network=${network}&tokenAddress=${tokenAddress}`
-        );
-        if (response.ok) {
-          const tokenData = await response.json();
-          const config =
-            typeof tokenData.wormholeConnectConfig === "string"
-              ? JSON.parse(tokenData.wormholeConnectConfig)
-              : tokenData.wormholeConnectConfig;
-          setWormholeConfig(config); // Set the parsed config
-          console.log(
-            "Wormhole Connect Config:",
-            tokenData.wormholeConnectConfig
-          );
-        } else {
-          console.error("Failed to fetch wormhole connect config");
-        }
-      } catch (error) {
-        console.error("Error fetching wormhole connect config:", error);
-      }
-    };
-
-    if (isBridgeModalOpen) {
-      fetchWormholeConfig();
-    }
-  }, [isBridgeModalOpen, network, tokenAddress]);
 
   const handleTabChange = (newTab: string) => {
     setTab(newTab);
@@ -189,15 +156,12 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
       </button>
 
       {/* Bridge Modal */}
-      {wormholeConfig && (
-        <BridgeModal
-          isOpen={isBridgeModalOpen}
-          onClose={() => setIsBridgeModalOpen(false)}
-          chainId={network}
-          tokenAddress={tokenAddress}
-          wormholeConfig={wormholeConfig} // Passing the fetched config to BridgeModal
-        />
-      )}
+      <BridgeModal
+        isOpen={isBridgeModalOpen}
+        onClose={() => setIsBridgeModalOpen(false)}
+        chainId={network}
+        tokenAddress={tokenAddress}
+      />
     </div>
   );
 };
