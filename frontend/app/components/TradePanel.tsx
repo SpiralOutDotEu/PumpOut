@@ -20,6 +20,7 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   const [slippage, setSlippage] = useState(1); // 1% slippage default
   const [isBridgeModalOpen, setIsBridgeModalOpen] = useState(false);
   const [tokenBalance, setTokenBalance] = useState(0);
+  const [ethBalance, setEthBalance] = useState(0);
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const contract = new ethers.Contract(
@@ -31,6 +32,8 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
   useEffect(() => {
     if (tab === "sell") {
       getUserTokenBalance();
+    } else if (tab === "buy") {
+      getUserEthBalance();
     }
   }, [tab]);
 
@@ -55,6 +58,16 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
       setTokenBalance(Number(ethers.formatUnits(balance, 18)));
     } catch (error) {
       console.error("Error fetching token balance:", error);
+    }
+  };
+
+  const getUserEthBalance = async () => {
+    try {
+      const signer = await provider.getSigner();
+      const balance = await provider.getBalance(signer.address);
+      setEthBalance(Number(ethers.formatEther(balance)));
+    } catch (error) {
+      console.error("Error fetching ETH balance:", error);
     }
   };
 
@@ -146,6 +159,26 @@ const TradePanel: React.FC<TradePanelProps> = ({ network, tokenAddress }) => {
           }
         />
       </div>
+
+      {/* Buy Tab - ETH Balance and Quick Select */}
+      {tab === "buy" && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-400">
+            ETH Balance: {ethBalance.toFixed(4)}
+          </p>
+          <div className="flex justify-between mt-2">
+            {[0.5, 0.1, 0.05, 0.01].map((amount) => (
+              <button
+                key={amount}
+                onClick={() => setEthAmount(amount)}
+                className="bg-gray-600 text-white py-1 px-2 mx-2 rounded-md text-sm hover:bg-gray-500 max-w-1/2"
+              >
+                {amount} ETH
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Sell Tab - Token Balance and Quick Select */}
       {tab === "sell" && (
