@@ -38,7 +38,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="flex items-center justify-between p-4 bg-gray-900 relative">
+    <header className="flex items-center justify-between p-4 bg-gray-900 relative shadow-2xl">
       {/* Left: Brand Name */}
       <div className="text-2xl font-bold">PUMPOUT</div>
 
