@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import TradePanel from "@/app/components/TradePanel";
 
@@ -10,6 +10,37 @@ const TokenPage: React.FC = () => {
   const pathSegments = pathname.split("/");
   const chainId = pathSegments[2];
   const tokenAddress = pathSegments[3];
+
+  // State for token data
+  const [tokenName, setTokenName] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
+
+  // Fetch token data from the API
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        const response = await fetch(
+          `/api/tokens/getTokenByAddress?network=${chainId}&tokenAddress=${tokenAddress}`
+        );
+        if (response.ok) {
+          const tokenData = await response.json();
+          setTokenName(tokenData.name);
+          setTokenSymbol(tokenData.symbol);
+        } else {
+          console.error("Failed to fetch token data");
+        }
+      } catch (error) {
+        console.error("Error fetching token data:", error);
+      }
+    };
+
+    fetchTokenData();
+  }, [chainId, tokenAddress]);
+
+  // Shorten the token address for display
+  const shortenedAddress = `${tokenAddress.slice(0, 6)}...${tokenAddress.slice(
+    -4
+  )}`;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
@@ -37,8 +68,11 @@ const TokenPage: React.FC = () => {
             </div>
             <div>
               {/* Token Name and Symbol */}
-              <p className="text-lg font-bold">Token Name</p>
-              <p className="text-sm text-gray-400">{tokenAddress}</p>
+              <p className="text-lg font-bold">{tokenName || "Token Name"}</p>
+              <p className="text-sm text-gray-400">{tokenSymbol || "Symbol"}</p>
+              <p className="text-xs text-gray-500">
+                Address: {shortenedAddress}
+              </p>
               <p className="text-xs text-gray-500">Chain ID: {chainId}</p>
             </div>
           </div>
