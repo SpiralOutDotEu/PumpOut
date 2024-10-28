@@ -68,7 +68,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId: ethers.toBeHex(network.chainId) }],
+            params: [{ chainId: ethers.toQuantity(network.chainId) }],
           });
           setWalletChainId(network.chainId);
         } catch (switchError: any) {
@@ -79,7 +79,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                 method: "wallet_addEthereumChain",
                 params: [
                   {
-                    chainId: ethers.toBeHex(network.chainId),
+                    chainId: ethers.toQuantity(network.chainId),
                     chainName: network.name,
                     rpcUrls: [network.rpcUrl],
                   },
