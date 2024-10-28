@@ -15,13 +15,13 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  // State variables
   const [selectedNetwork, setSelectedNetwork] = useState(NETWORKS[0]);
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [chainIds, setChainIds] = useState<number[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [logo, setLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [encodedLogo, setEncodedLogo] = useState<string | null>(null);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,7 +92,20 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLogo(e.target.files ? e.target.files[0] : null);
+    const file = e.target.files ? e.target.files[0] : null;
+    setLogo(file);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+        setEncodedLogo(reader.result?.toString().split(",")[1] || null); // Extracts base64 data
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setLogoPreview(null);
+      setEncodedLogo(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,7 +173,6 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       }
 
       if (!newTokenAddress && receipt.logs) {
-        console.log("receipt.logs: ", receipt.logs);
         newTokenAddress = receipt.logs[0].address;
       }
 
@@ -168,7 +180,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
         setNewTokenAddress(newTokenAddress);
         console.log("New token address from event:", newTokenAddress);
 
-        // Save token data to database
+        // Save token data to the database, including the base64-encoded logo
         await fetch("/api/tokens/addToken", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -177,7 +189,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             tokenAddress: newTokenAddress,
             name,
             symbol,
-            logo: logo ? URL.createObjectURL(logo) : "",
+            logo: encodedLogo ? `data:image/png;base64,${encodedLogo}` : null,
           }),
         });
       } else {
@@ -228,6 +240,13 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             onChange={handleLogoChange}
             className="mt-1 block w-full text-sm text-gray-500"
           />
+          {logoPreview && (
+            <img
+              src={logoPreview}
+              alt="Logo Preview"
+              className="mt-2 w-16 h-16 object-cover rounded-md"
+            />
+          )}
         </div>
 
         {/* Function Parameters */}

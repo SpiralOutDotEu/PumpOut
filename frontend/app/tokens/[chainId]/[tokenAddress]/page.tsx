@@ -14,6 +14,7 @@ const TokenPage: React.FC = () => {
   // State for token data
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
+  const [logo, setLogo] = useState("");
 
   // Fetch token data from the API
   useEffect(() => {
@@ -26,6 +27,7 @@ const TokenPage: React.FC = () => {
           const tokenData = await response.json();
           setTokenName(tokenData.name);
           setTokenSymbol(tokenData.symbol);
+          setLogo(tokenData.logo);
         } else {
           console.error("Failed to fetch token data");
         }
@@ -63,8 +65,17 @@ const TokenPage: React.FC = () => {
         <div className="bg-gray-700 p-4 mb-4 rounded-md">
           <div className="flex items-center space-x-4">
             {/* Token Logo Placeholder */}
-            <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
-              <p className="text-sm font-bold">Logo</p>
+            {/* Token Logo Display */}
+            <div className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center overflow-hidden">
+              {logo ? (
+                <img
+                  src={logo}
+                  alt="Token Logo"
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <p className="text-sm font-bold">Logo</p>
+              )}
             </div>
             <div>
               {/* Token Name and Symbol */}
