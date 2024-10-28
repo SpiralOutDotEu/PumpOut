@@ -43,3 +43,13 @@ export const CHAIN_ID_OPTIONS = [
   { chainId: 1, name: 'Ethereum Mainnet', supported: false },
   // Add other chain IDs here
 ];
+
+export const NTT_CONNECT_NETWORK_NAME_MAP: Record<string, string> = {
+  BaseSepolia: 'base_sepolia',
+  Base: 'base',
+  ArbitrumSepolia: 'arbitrum_sepolia',
+  Sepolia: 'sepolia',
+  Ethereum: 'ethereum',
+  Solana: 'solana',
+  // Add more mappings as needed
+};

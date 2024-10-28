@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NttData } from '../types/nttData';
-import { database } from '../lib/db';
+import { database } from '../lib/db'; // Assuming you have a database service
+import { NTT_CONNECT_NETWORK_NAME_MAP } from '../constants';
 
 export async function addNewNttFileService(data: NttData): Promise<Record<string, unknown>> {
     const { projectData, network, tokenAddress } = data;
@@ -15,24 +16,24 @@ export async function addNewNttFileService(data: NttData): Promise<Record<string
 
     const tokenSymbol = token.symbol;
     const tokenName = token.name;
-    const tokenLogo = token.logo; // May be undefined
+    const tokenLogo = token.logo;
+
+    // Map network names based on constants
+    const mappedChains = chains.map(chain => NTT_CONNECT_NETWORK_NAME_MAP[chain] || chain.toLowerCase());
 
     // Build tokensConfig with unique keys for each network
     const tokensConfig = buildTokensConfig(projectData.chains, tokenSymbol, tokenName, tokenLogo);
 
-    // Define the NTT group name using token symbol and NTT suffix
-    const nttGroupName = `${tokenSymbol}_NTT`;
-
     // Construct the main configuration JSON structure
     const config = {
         env: projectData.network.toLowerCase(), // Assuming network is uppercase in the projectData
-        networks: chains.map(chain => chain.toLowerCase()), // List of chain names in lowercase
+        networks: mappedChains,
         bridgeDefaults: {
-            fromNetwork: chains[0].toLowerCase() || 'unknown',
-            toNetwork: chains[1]?.toLowerCase() || 'unknown'
+            fromNetwork: mappedChains[0] || 'unknown',
+            toNetwork: mappedChains[1] || 'unknown'
         },
         nttGroups: {
-            [nttGroupName]: {
+            NTT_GROUP: { // Use generic name for the NTT group
                 nttManagers: buildNttManagers(projectData.chains, tokenSymbol)
             }
         },
@@ -40,7 +41,7 @@ export async function addNewNttFileService(data: NttData): Promise<Record<string
     };
 
     console.log('Generated Configuration:', JSON.stringify(config, null, 2));
-    database.updateWormholeConnectConfig(network, tokenAddress, config)
+    database.updateWormholeConnectConfig(network, tokenAddress, config);
 
     return config;
 }
@@ -56,24 +57,25 @@ function buildTokensConfig(
 
     for (const chainName of Object.keys(chainsData)) {
         const chain = chainsData[chainName];
+        const mappedChainName = NTT_CONNECT_NETWORK_NAME_MAP[chainName] || chainName.toLowerCase();
 
-        // Generate unique key for tokensConfig, e.g., 'FTTsep' for 'Sepolia'
-        const tokenKey = `${tokenSymbol}${chainName.slice(0, 3).toLowerCase()}`;
+        // Generate unique token key
+        const tokenKey = `${tokenSymbol}${mappedChainName.slice(0, 3)}${mappedChainName.slice(-3)}`;
 
         tokensConfig[tokenKey] = {
             key: tokenKey,
             symbol: tokenSymbol,
-            nativeChain: chainName.toLowerCase(),
-            displayName: `${tokenSymbol} (${chainName})`,
+            nativeChain: mappedChainName,
+            displayName: `${tokenName} (${mappedChainName.charAt(0).toUpperCase() + mappedChainName.slice(1)})`,
             tokenId: {
-                chain: chainName.toLowerCase(),
+                chain: mappedChainName,
                 address: chain.token
             },
             coinGeckoId: 'test', // Placeholder, replace as necessary
             icon: tokenLogo || 'https://wormhole.com/token.png',
-            color: '#00C3D9', // Set a default color
+            color: '#00C3D9', // Default color
             decimals: {
-                [chainName === 'Solana' ? 'Solana' : 'Ethereum']: chainName === 'Solana' ? 9 : 18,
+                [mappedChainName === 'solana' ? 'Solana' : 'Ethereum']: mappedChainName === 'solana' ? 9 : 18,
                 default: 8
             }
         };
@@ -88,12 +90,13 @@ function buildNttManagers(chainsData: Record<string, any>, tokenSymbol: string):
 
     for (const chainName of Object.keys(chainsData)) {
         const chain = chainsData[chainName];
+        const mappedChainName = NTT_CONNECT_NETWORK_NAME_MAP[chainName] || chainName.toLowerCase();
 
-        // Generate tokenKey for this chain, e.g., 'FTTsep' for 'Sepolia'
-        const tokenKey = `${tokenSymbol}${chainName.slice(0, 3).toLowerCase()}`;
+        // Generate tokenKey for this chain
+        const tokenKey = `${tokenSymbol}${mappedChainName.slice(0, 3)}${mappedChainName.slice(-3)}`;
 
         const managerConfig = {
-            chainName: chainName.toLowerCase(),
+            chainName: mappedChainName,
             address: chain.manager,
             tokenKey,
             transceivers: [
