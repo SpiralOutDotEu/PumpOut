@@ -50,10 +50,20 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-scroll">
-      <div className="bg-gray-800 p-6 rounded-lg w-[860px] max-h-[90vh] overflow-y-auto">
-        <h2 className="text-white text-lg mb-4">Bridge Options</h2>
-        <p className="text-sm text-gray-400">Chain ID: {chainId}</p>
-        <p className="text-sm text-gray-400">Token Address: {tokenAddress}</p>
+      <div className="relative bg-gray-800 p-6 rounded-lg w-[860px] max-h-[90vh] overflow-y-auto">
+        {/* Close button in the top-right corner */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white text-lg"
+          aria-label="Close"
+        >
+          X
+        </button>
+
+        {/* Centered title */}
+        <h2 className="text-white text-xl mb-4 flex items-center justify-center">
+          Bridge Your Assets
+        </h2>
 
         {/* Render WormholeConnect if wormholeConfig is available */}
         {wormholeConfig ? (
@@ -66,6 +76,7 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
           </p>
         )}
 
+        {/* Close button at the bottom */}
         <button
           onClick={onClose}
           className="bg-red-500 text-white py-2 px-4 rounded-md w-full mt-4"
