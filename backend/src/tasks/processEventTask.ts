@@ -97,6 +97,7 @@ async function processEventTask(eventData: EventData): Promise<any> {
         console.log(`NTT push command completed for ${projectName}`);
 
         // After pushing the project file
+        console.log("Setting minter for: ", projectFilePath);
         await setMinterForEVMChains(projectFilePath);
         console.log("Minter set for all EVM chains in the project file.");
 

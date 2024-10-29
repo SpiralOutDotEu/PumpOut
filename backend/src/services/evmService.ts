@@ -66,7 +66,10 @@ export async function processEVMEvent(eventData: EVMEventData): Promise<any> {
         const gasEstimate = await contract.createPeerToken.estimateGas(
             name, symbol, parseInt(chainId), tokenAddress
         );
-
+        console.log("RPC: ", rpcUrl)
+        console.log("Contract Address: ", contractAddress)
+        console.log("name: ", name, " symbol: ", symbol);
+        console.log("parent: ", parseInt(chainId))
         const tx = await contract.createPeerToken(
             name, symbol, parseInt(chainId), tokenAddress,
             {
@@ -151,7 +154,7 @@ export async function setMinterForEVMChains(projectFilePath: string): Promise<vo
 
             // Estimate gas and send the `setMinter` transaction
             const gasEstimate = await contract.setMinter.estimateGas(chainData.manager);
-
+            console.log("Setting minter: ", chainData.manager , " on token: ", chainData.token, " on chainID: ", chainId, " ", chainName, " and rpc: ", rpcUrl)
             const tx = await contract.setMinter(chainData.manager, {
                 gasLimit: gasEstimate,
                 gasPrice: (await provider.getFeeData()).gasPrice,
