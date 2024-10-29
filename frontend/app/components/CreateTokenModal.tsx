@@ -19,6 +19,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [chainIds, setChainIds] = useState<number[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [encodedLogo, setEncodedLogo] = useState<string | null>(null);
