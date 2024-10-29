@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { generateSolanaKeyPair, deriveSolanaTokenAuthority } from './nttCliService';
 import "dotenv/config";
 
 interface SolanaEventData {
@@ -43,15 +44,25 @@ export async function processSolanaEvent(eventData: SolanaEventData): Promise<an
 
     // Step 1: Get environment variables for Solana
     const solanaPayer = process.env['SOLANA_PAYER'];
-    const derivedPDA = process.env['DERIVED_PDA'];
-    const nttProgramKeypair = process.env['NTT_PROGRAM_KEYPAIR'];
+    const solanaKeyPairsPath = process.env['SOLANA_KEY_PAIRS_PATH'] as string;
+    // const derivedPDA = process.env['DERIVED_PDA'];
+    // const nttProgramKeypair = process.env['NTT_PROGRAM_KEYPAIR'];
 
-    if (!solanaPayer || !derivedPDA || !nttProgramKeypair) {
-        throw new Error('Missing required Solana environment variables');
+    if (!solanaPayer) {
+        throw new Error('Missing required Solana Payer environment variable');
     }
 
     try {
-        // Step 2: Run "spl-token create-token" and extract token address from output
+        // Step 2: Generate the key pair and derive the token authority
+        console.log('Generating NTT program key pair...');
+        const { keyPairPath, keyAddress } = await generateSolanaKeyPair(solanaKeyPairsPath);
+        console.log(`Generated Key Pair Path: ${keyPairPath}, Key Address: ${keyAddress}`);
+
+        console.log('Deriving token authority...');
+        const derivedPDA = await deriveSolanaTokenAuthority(keyAddress);
+        console.log(`Derived Token Authority (PDA): ${derivedPDA}`);
+
+        // Step 3: Run "spl-token create-token" and extract token address from output
         console.log('Creating Solana token...');
         const createTokenOutput = await runCliCommand('spl-token', ['create-token'], projectPath);
         const tokenAddressMatch = createTokenOutput.match(/Address:\s+([A-Za-z0-9]+)/);
@@ -63,11 +74,11 @@ export async function processSolanaEvent(eventData: SolanaEventData): Promise<an
 
         console.log(`Token created: ${tokenAddress}`);
 
-        // Step 3: Set the mint authority using "spl-token authorize"
+        // Step 4: Set the mint authority using "spl-token authorize"
         console.log(`Setting mint authority for token: ${tokenAddress}`);
         await runCliCommand('spl-token', ['authorize', tokenAddress, 'mint', derivedPDA], projectPath);
 
-        // Step 4: Run the NTT CLI "ntt add-chain" command
+        // Step 5: Run the NTT CLI "ntt add-chain" command
         console.log(`Adding chain to NTT: Solana`);
         await runCliCommand(
             'ntt',
@@ -77,7 +88,7 @@ export async function processSolanaEvent(eventData: SolanaEventData): Promise<an
                 '--mode', 'burning',
                 '--token', tokenAddress,
                 '--payer', solanaPayer,
-                '--program-key', nttProgramKeypair,
+                '--program-key', keyPairPath,
                 '--path', projectFile
             ],
             projectPath

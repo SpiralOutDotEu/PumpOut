@@ -84,7 +84,7 @@ export async function addChain(chainIdString: string, projectFile: string, proje
  */
 export async function pushProject(projectFile: string, basePath: string): Promise<void> {
   const command = 'ntt';
-  const args = ['push', '--path', projectFile, '--payer', SOLANA_PAYER];
+  const args = ['push', '--path', projectFile, '--payer', SOLANA_PAYER, '--yes'];
 
   try {
     console.log(`Running NTT push for project file: ${projectFile}`);
@@ -97,8 +97,65 @@ export async function pushProject(projectFile: string, basePath: string): Promis
   }
 }
 
+/**
+ * Generate Solana NTT Program Key Pair.
+ * @param basePath The directory path to run the key pair generation command.
+ * @returns An object containing the full path to the generated JSON file and the key address without the .json extension.
+ * @throws An error if key pair generation fails.
+ */
+export async function generateSolanaKeyPair(basePath: string): Promise<{ keyPairPath: string, keyAddress: string }> {
+  try {
+    console.log(`Generating NTT Program Key Pair in path: ${basePath}`);
+    const grindOutput = await spawnPromise('solana-keygen', ['grind', '--starts-with', 'ntt:1', '--ignore-case'], { cwd: basePath });
+
+    // Extract the JSON filename from grind output
+    const keyFileMatch = grindOutput.match(/Wrote keypair to (\S+\.json)/);
+    if (!keyFileMatch) throw new Error("Failed to find generated keypair JSON file in the output.");
+
+    const keyPairFile = keyFileMatch[1];
+    const keyPairPath = path.join(basePath, keyPairFile);
+    const keyAddress = path.parse(keyPairFile).name; // Key address without .json extension
+
+    console.log(`Key Pair generated: ${keyAddress}, Path: ${keyPairPath}`);
+    return { keyPairPath, keyAddress };
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred during key pair generation.";
+    console.error(errorMessage, error);
+    throw new Error(`Failed to generate NTT Program Key Pair: ${errorMessage}`);
+  }
+}
+
+/**
+ * Derive Solana Token Authority for a given key address.
+ * @param keyAddress The key address without the .json extension.
+ * @returns The derived token authority.
+ * @throws An error if token authority derivation fails.
+ */
+export async function deriveSolanaTokenAuthority(keyAddress: string): Promise<string> {
+  try {
+    console.log(`Deriving token authority using key address: ${keyAddress}`);
+    const tokenAuthorityOutput = await spawnPromise('ntt', ['solana', 'token-authority', keyAddress], {});
+
+    // Extract the token authority from the output
+    const tokenAuthorityMatch = tokenAuthorityOutput.match(/[a-zA-Z0-9]{43,44}/);
+    if (!tokenAuthorityMatch) throw new Error("Failed to find token authority in the output.");
+
+    const tokenAuthority = tokenAuthorityMatch[0];
+    console.log(`Derived Token Authority: ${tokenAuthority}`);
+    return tokenAuthority;
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred during token authority derivation.";
+    console.error(errorMessage, error);
+    throw new Error(`Failed to derive Token Authority: ${errorMessage}`);
+  }
+}
+
 export default {
   createProject,
   addChain,
-  pushProject
+  pushProject,
+  generateSolanaKeyPair,
+  deriveSolanaTokenAuthority
 };
