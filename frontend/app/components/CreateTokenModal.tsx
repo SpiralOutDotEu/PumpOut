@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { CHAIN_ID_OPTIONS, NETWORKS } from "../constants";
 import { ethers } from "ethers";
+import Image from "next/image";
+import RetroLoading from "./RetroLoading";
 
 interface CreateTokenModalProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [transactionHash, setTransactionHash] = useState("");
   const [newTokenAddress, setNewTokenAddress] = useState("");
+  const [isDone, setIsDone] = useState<boolean>(false);
 
   const [walletChainId, setWalletChainId] = useState<number | null>(null);
 
@@ -198,6 +201,7 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       }
 
       setIsSubmitting(false);
+      setIsDone(true);
     } catch (err: any) {
       console.error("Transaction error details:", err);
       setError(err.message || "An error occurred.");
@@ -242,10 +246,12 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             className="mt-1 block w-full text-sm text-gray-500"
           />
           {logoPreview && (
-            <img
+            <Image
               src={logoPreview}
               alt="Logo Preview"
-              className="mt-2 w-16 h-16 object-cover rounded-md"
+              width={64}
+              height={64}
+              className="mt-2 object-cover rounded-md"
             />
           )}
         </div>
@@ -319,12 +325,26 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
         {/* Error Message */}
         {error && <div className="mt-4 text-red-600">{error}</div>}
 
-        {/* Submit Button */}
-        <div className="mt-4">
+        {isSubmitting && <RetroLoading />}
+
+        {/* Submit and Close Buttons */}
+        <div className="mt-4 flex justify-between">
+          <button
+            type="button"
+            disabled={isSubmitting || isDone}
+            onClick={onClose}
+            className={`${
+              isSubmitting || isDone ? "bg-gray-400" : "bg-red-600"
+            } text-white px-4 py-2 rounded`}
+          >
+            Cancel
+          </button>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="bg-green-600 text-white px-4 py-2 rounded"
+            disabled={isSubmitting || isDone}
+            className={`${
+              isSubmitting || isDone ? "bg-gray-400" : "bg-green-600"
+            } text-white px-4 py-2 rounded`}
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </button>
@@ -332,23 +352,24 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       </form>
 
       {/* Transaction Result */}
-      {transactionHash && (
+      {transactionHash && isDone && (
         <div className="mt-4">
-          <p className="text-sm text-gray-400">Transaction submitted:</p>
-          <a
-            href={`${selectedNetwork.explorerUrl}/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-blue-600 underline text-ellipsis overflow-hidden"
-          >
-            View Transaction
-          </a>
           <div className="mt-2">
+            <button className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold">
+              <a
+                href={`/tokens/${selectedNetwork.chainId}/${newTokenAddress}`}
+                className="block"
+              >
+                Go to Token Page
+              </a>
+            </button>
             <a
-              href={`/tokens/${selectedNetwork.chainId}/${newTokenAddress}`}
-              className="block text-green-500 underline font-semibold"
+              href={`${selectedNetwork.explorerUrl}/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-1 text-xs text-blue-600 underline text-ellipsis overflow-hidden"
             >
-              Go to Token Page
+              View Transaction
             </a>
           </div>
         </div>
