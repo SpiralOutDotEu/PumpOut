@@ -14,6 +14,18 @@ export async function POST(req: NextRequest) {
 
         await database.addToken({ network, tokenAddress, name, symbol, logo });
 
+        // Get the notify URL from environment variables
+        const notifyUrl = process.env.NOTIFY_BACKEND_URL;
+        if (notifyUrl) {
+            // Notify backend with a POST request
+            await fetch(notifyUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+        } else {
+            console.warn("Notify backend URL is not defined in .env");
+        }
+
         return NextResponse.json(
             { message: "Token created successfully" },
             { status: 201 }
