@@ -5,6 +5,7 @@ import Modal from "./Modal";
 import CreateTokenModal from "./CreateTokenModal";
 import { useWallet } from "../context/WalletProvider";
 import { useRouter } from "next/navigation";
+import HowItWorksModal from "./HowItWorksModal";
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -103,13 +104,10 @@ const Header: React.FC = () => {
 
       {/* Modals */}
       {isHowItWorksOpen && (
-        <Modal
+        <HowItWorksModal
           isOpen={isHowItWorksOpen}
           onClose={() => setIsHowItWorksOpen(false)}
-          title="How It Works"
-        >
-          <p>Explanation goes here...</p>
-        </Modal>
+        />
       )}
 
       {isCreateTokenOpen && (
