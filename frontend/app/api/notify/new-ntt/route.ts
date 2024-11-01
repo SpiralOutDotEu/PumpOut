@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         console.log("projectData", projectData)
 
         // Pass data to the service
-        const wormholeConnectConfig: WormholeConnectConfig = await addNewNttFileService({ projectData, network, tokenAddress });
+        const wormholeConnectConfig: WormholeConnectConfig = await addNewNttFileService({ projectData, network, tokenAddress }) as unknown as WormholeConnectConfig;;
         console.log("wormholeConnectConfig: ", wormholeConnectConfig);
 
         // add ntt data to database
