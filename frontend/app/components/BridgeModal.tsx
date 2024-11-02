@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic"; // Import Next.js dynamic
+import dynamic from "next/dynamic";
 import type { WormholeConnectConfig } from "@wormhole-foundation/wormhole-connect";
 import Loading from "./RetroLoading"; // Import the Loading component
 
@@ -26,7 +26,6 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
   const [wormholeConfig, setWormholeConfig] =
     useState<WormholeConnectConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isWormholeLoaded, setIsWormholeLoaded] = useState(false); // New state
 
   useEffect(() => {
     const fetchWormholeConfig = async () => {
@@ -41,7 +40,7 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
             typeof tokenData.wormholeConnectConfig === "string"
               ? JSON.parse(tokenData.wormholeConnectConfig)
               : tokenData.wormholeConnectConfig;
-          setWormholeConfig(config); // Set the parsed config
+          setWormholeConfig(config);
           console.log("Wormhole Connect Config:", config);
         } else {
           console.error("Failed to fetch wormhole connect config");
@@ -57,17 +56,6 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
       fetchWormholeConfig();
     }
   }, [isOpen, chainId, tokenAddress]);
-
-  // Simulate WormholeConnect loading delay
-  useEffect(() => {
-    if (wormholeConfig) {
-      const timer = setTimeout(() => {
-        setIsWormholeLoaded(true);
-      }, 1000); // Delay for 1 second
-
-      return () => clearTimeout(timer);
-    }
-  }, [wormholeConfig]);
 
   if (!isOpen) return null;
 
@@ -89,7 +77,7 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
         </h2>
 
         {/* Loading Spinner */}
-        {isLoading || !isWormholeLoaded ? (
+        {isLoading ? (
           <Loading />
         ) : wormholeConfig ? (
           // Render WormholeConnect if config is available
