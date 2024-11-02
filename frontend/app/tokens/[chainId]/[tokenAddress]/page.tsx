@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import TradePanel from "@/app/components/TradePanel";
+import Link from "next/link";
 
 const TokenPage: React.FC = () => {
   const pathname = usePathname();
@@ -10,6 +11,9 @@ const TokenPage: React.FC = () => {
   const pathSegments = pathname.split("/");
   const chainId = pathSegments[2];
   const tokenAddress = pathSegments[3];
+
+  // Construct the governance link
+  const governanceLink = `${pathname}/governance`;
 
   // State for token data
   const [tokenName, setTokenName] = useState("");
@@ -85,6 +89,12 @@ const TokenPage: React.FC = () => {
                 Address: {shortenedAddress}
               </p>
               <p className="text-xs text-gray-500">Chain ID: {chainId}</p>
+              {/* Gold Button to Governance */}
+              <Link href={governanceLink}>
+                <button className="w-full bg-yellow-400 text-black font-semibold py-1 px-3 rounded-md hover:bg-yellow-500 transition text-xs">
+                  Go to Governance
+                </button>
+              </Link>
             </div>
           </div>
         </div>
