@@ -3,6 +3,7 @@ import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "./context/WalletProvider";
 import Header from "./components/Header";
+import BetaBanner from "./components/BetaBanner";
 
 const pressStart2P = Press_Start_2P({
   subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${pressStart2P.variable} antialiased`}>
         <WalletProvider>
+          <BetaBanner />
           <Header />
           {children}
         </WalletProvider>
