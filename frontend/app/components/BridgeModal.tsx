@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic"; // Import Next.js dynamic
 import type { WormholeConnectConfig } from "@wormhole-foundation/wormhole-connect";
+import Loading from "./RetroLoading"; // Import the Loading component
 
 // Dynamically import WormholeConnect with no SSR
 const WormholeConnect = dynamic(
   () => import("@wormhole-foundation/wormhole-connect"),
-  { ssr: false }
+  { ssr: false, loading: () => <Loading /> } // Add Loading component during import
 );
 
 interface BridgeModalProps {
@@ -24,10 +25,13 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
 }) => {
   const [wormholeConfig, setWormholeConfig] =
     useState<WormholeConnectConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isWormholeLoaded, setIsWormholeLoaded] = useState(false); // New state
 
   useEffect(() => {
     const fetchWormholeConfig = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(
           `/api/tokens/getTokenByAddress?network=${chainId}&tokenAddress=${tokenAddress}`
         );
@@ -44,6 +48,8 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
         }
       } catch (error) {
         console.error("Error fetching wormhole connect config:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -51,6 +57,17 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
       fetchWormholeConfig();
     }
   }, [isOpen, chainId, tokenAddress]);
+
+  // Simulate WormholeConnect loading delay
+  useEffect(() => {
+    if (wormholeConfig) {
+      const timer = setTimeout(() => {
+        setIsWormholeLoaded(true);
+      }, 1000); // Delay for 1 second
+
+      return () => clearTimeout(timer);
+    }
+  }, [wormholeConfig]);
 
   if (!isOpen) return null;
 
@@ -71,15 +88,36 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
           Bridge Your Assets
         </h2>
 
-        {/* Render WormholeConnect if wormholeConfig is available */}
-        {wormholeConfig ? (
+        {/* Loading Spinner */}
+        {isLoading || !isWormholeLoaded ? (
+          <Loading />
+        ) : wormholeConfig ? (
+          // Render WormholeConnect if config is available
           <div className="mt-4">
             <WormholeConnect config={wormholeConfig} />
           </div>
         ) : (
-          <p className="text-sm text-gray-500 mt-4">
-            Loading bridge options...
-          </p>
+          // Message if config is not available
+          <div className="mt-4 text-sm text-gray-500">
+            <p className="mb-2">
+              It seems that the Wormhole config is not available yet. If this is
+              a new token, please check back in 10-15 minutes. Configurations
+              may take some time to become available.
+            </p>
+            <p>
+              If you just want to see how this works, try a ready token here:{" "}
+              <a
+                href="https://demo.pumpout.xyz/tokens/421614/0x504a922eF0b6225e7665Fd8B3CC1858aA6c9553F"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 underline"
+              >
+                Ready Token Example
+              </a>
+              . You can mint some tokens on Arbitrum Sepolia and then bridge
+              them to Base Sepolia or Solana.
+            </p>
+          </div>
         )}
 
         {/* Close button at the bottom */}
