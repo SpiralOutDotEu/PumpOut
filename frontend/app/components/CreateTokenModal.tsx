@@ -95,21 +95,48 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     }
   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    setLogo(file);
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-        setEncodedLogo(reader.result?.toString().split(",")[1] || null); // Extracts base64 data
-      };
-      reader.readAsDataURL(file);
-    } else {
+  const handleLogoChange = (file: File | null) => {
+    if (!file) {
+      setLogo(null);
       setLogoPreview(null);
       setEncodedLogo(null);
+      return;
     }
+
+    if (!file.type.startsWith("image/jpeg")) {
+      setError("Only JPG/JPEG images are allowed.");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Image size must be less than 2MB.");
+      return;
+    }
+
+    setError("");
+    setLogo(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result as string);
+      setEncodedLogo(reader.result?.toString().split(",")[1] || null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    handleLogoChange(file);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    handleLogoChange(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -234,26 +261,45 @@ const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
           </select>
         </div>
 
-        {/* Logo Upload */}
-        <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Logo
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleLogoChange}
-            className="mt-1 block w-full text-sm text-gray-500"
-          />
-          {logoPreview && (
-            <Image
-              src={logoPreview}
-              alt="Logo Preview"
-              width={64}
-              height={64}
-              className="mt-2 object-cover rounded-md"
+        {/* Logo Upload Area */}
+        <div
+          className="mt-4 border-dashed border-2 border-gray-300 p-4 rounded-md flex items-center justify-between"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          {/* Left Side: Upload Button and Text */}
+          <div className="flex flex-col space-y-2 w-1/2">
+            <label className="block text-sm font-medium text-gray-700">
+              Logo (JPG/JPEG, max 2MB)
+            </label>
+            <input
+              type="file"
+              accept=".jpg,.jpeg"
+              onChange={handleFileInput}
+              className="text-xs text-gray-500"
             />
-          )}
+            <p className="text-xs text-gray-500">
+              Drag and drop an image here or click to select
+            </p>
+            {error && <div className="text-red-600 text-xs">{error}</div>}
+          </div>
+
+          {/* Right Side: Image Preview */}
+          <div className="w-1/2 flex justify-center items-center">
+            {logoPreview ? (
+              <Image
+                src={logoPreview}
+                alt="Logo Preview"
+                width={128}
+                height={128}
+                className="object-cover rounded-md"
+              />
+            ) : (
+              <div className="w-32 h-32 bg-gray-200 flex items-center justify-center rounded-md">
+                <span className="text-xs text-gray-400">No Image</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Function Parameters */}
