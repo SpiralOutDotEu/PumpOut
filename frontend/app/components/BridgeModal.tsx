@@ -92,18 +92,19 @@ const BridgeModal: React.FC<BridgeModalProps> = ({
               a new token, please check back in 10-15 minutes. Configurations
               may take some time to become available.
             </p>
+            <p className="mb-2"> Note that this is still in Proof Of Concept Stage and without much of error handling.</p>
             <p>
               If you just want to see how this works, try a ready token here:{" "}
               <a
-                href="https://demo.pumpout.xyz/tokens/421614/0x504a922eF0b6225e7665Fd8B3CC1858aA6c9553F"
+                href="https://demo.pumpout.xyz/tokens/84532/0x9aEd9e8c3526D05462816ADB54020B803400FB82"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-400 underline"
               >
                 Ready Token Example
               </a>
-              . You can mint some tokens on Arbitrum Sepolia and then bridge
-              them to Base Sepolia or Solana.
+              . You can mint some tokens on Base Sepolia and then bridge them to
+              Arbitrum Sepolia or Solana.
             </p>
           </div>
         )}
