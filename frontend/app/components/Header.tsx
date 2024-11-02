@@ -124,9 +124,19 @@ const Header: React.FC = () => {
           onClose={() => setMetaMaskError(false)}
           title="Ethereum Wallet Not Found"
         >
-          <p>
+          <p className="mt-4">
             Please install MetaMask, or another Ethereum wallet, to connect.
           </p>
+
+          {/* Close Button at the Bottom */}
+          <div className="mt-6 flex justify-end">
+            <button
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={() => setMetaMaskError(false)}
+            >
+              Close
+            </button>
+          </div>
         </Modal>
       )}
     </header>

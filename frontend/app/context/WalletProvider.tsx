@@ -1,5 +1,3 @@
-// WalletProvider.tsx
-
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -29,8 +27,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
     if (typeof window !== "undefined" && window.ethereum) {
       try {
         const web3Provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await web3Provider.send("eth_requestAccounts", []);
         const signer = await web3Provider.getSigner();
-        const address = await signer.getAddress();
+        const address = accounts[0] || (await signer.getAddress());
 
         setProvider(web3Provider);
         setAccount(address);
@@ -48,29 +47,53 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       } catch (error) {
         console.error("Failed to connect wallet:", error);
+        setMetaMaskError(true);
       }
     } else {
       setMetaMaskError(true);
     }
   };
 
+  // Function to disconnect the wallet
   const disconnectWallet = () => {
     setAccount(null);
     setProvider(null);
     setNetwork(null);
   };
 
+  // Check if MetaMask is already connected and restore the state
   useEffect(() => {
-    if (window.ethereum && account) {
-      window.ethereum.on("accountsChanged", (accounts: string[]) => {
-        setAccount(accounts[0] || null);
-      });
+    const restoreWalletConnection = async () => {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          const web3Provider = new ethers.BrowserProvider(window.ethereum);
+          const accounts = await web3Provider.send("eth_accounts", []);
+          if (accounts.length > 0) {
+            const address = accounts[0];
+            setProvider(web3Provider);
+            setAccount(address);
 
-      window.ethereum.on("chainChanged", async () => {
-        const networkData = await provider?.getNetwork();
-        setNetwork(networkData || null);
-      });
-    }
+            const networkData = await web3Provider.getNetwork();
+            setNetwork(networkData);
+
+            // Watch for account and network changes
+            window.ethereum.on("accountsChanged", (accounts: string[]) => {
+              setAccount(accounts[0] || null);
+            });
+
+            window.ethereum.on("chainChanged", async () => {
+              const updatedNetwork = await web3Provider.getNetwork();
+              setNetwork(updatedNetwork);
+            });
+          }
+        } catch (error) {
+          console.error("Failed to restore wallet connection:", error);
+          setMetaMaskError(true);
+        }
+      }
+    };
+
+    restoreWalletConnection();
 
     return () => {
       if (window.ethereum) {
@@ -78,7 +101,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
         window.ethereum.removeListener("chainChanged", () => {});
       }
     };
-  }, [account, provider]);
+  }, []);
 
   return (
     <WalletContext.Provider
