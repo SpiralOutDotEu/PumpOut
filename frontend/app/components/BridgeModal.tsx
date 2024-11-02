@@ -1,7 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic"; // Import Next.js dynamic
 import type { WormholeConnectConfig } from "@wormhole-foundation/wormhole-connect";
-import WormholeConnect from "@wormhole-foundation/wormhole-connect";
+
+// Dynamically import WormholeConnect with no SSR
+const WormholeConnect = dynamic(
+  () => import("@wormhole-foundation/wormhole-connect"),
+  { ssr: false }
+);
 
 interface BridgeModalProps {
   isOpen: boolean;
