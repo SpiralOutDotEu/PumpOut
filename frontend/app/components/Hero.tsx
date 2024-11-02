@@ -68,8 +68,8 @@ const Hero: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <div className="flex flex-wrap gap-x-2 gap-y-2">
+    <div className="p-4 flex justify-center">
+      <div className="flex flex-wrap gap-x-2 gap-y-2 justify-center">
         {tokens.map((token) => {
           const textColor = getContrastColor(token.color);
 
