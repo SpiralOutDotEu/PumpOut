@@ -10,7 +10,7 @@ contract PumpOutTokenFactoryScript is Script {
     TokenDeployer public tokenDeployer;
 
     // Define the parameters for deployment
-    uint256[] public chainIds = [421614, 901]; // Example chain IDs: Arbitrum Sepolia, Solana dev
+    uint256[] public chainIds = [84532, 901]; // Example chain IDs: Arbitrum Sepolia = 421614, Base Sepolia = 84532, Solana dev = 901
     uint256[] public prices = [0.0000001 ether, 0.0000001 ether]; // Example prices in wei
     uint256 public minFee = 0.0000001 ether; // Example minimum fee in wei
 
@@ -35,8 +35,8 @@ contract PumpOutTokenFactoryScript is Script {
         console.log("PumpOutTokenFactory deployed at:", address(factory));
 
         // Define the token names and symbols for the tokens to be created
-        string memory name1 = "Sample Multi Token";
-        string memory symbol1 = "SMTKN";
+        string memory name1 = "aSample Multi Token";
+        string memory symbol1 = "aSMTKN";
 
         // Deploy the first token using the default parameters in the factory
         uint256 requiredAmount = factory.getRequiredAmount(chainIds);
@@ -44,8 +44,8 @@ contract PumpOutTokenFactoryScript is Script {
         console.log("Token 1 deployed at address:", address(token1));
 
         // Define parameters for the second token
-        string memory name2 = "Second Multi Token";
-        string memory symbol2 = "S2MTKN";
+        string memory name2 = "aSecond Multi Token";
+        string memory symbol2 = "aS2MTKN";
 
         // Deploy the second token using the default parameters in the factory
         uint256 requiredAmount2 = factory.getRequiredAmount(chainIds);
